@@ -113,6 +113,8 @@ async def async_process_submission(submission_id: int):
         max_memory = 0.0
         overall_status = SubmissionStatus.AC
         failed_test_case_info = None
+        failed_test_case_obj = None
+        failed_test_case_result = None
 
         # Chay qua tung test case
         for idx, tc in enumerate(test_cases, 1):
@@ -133,6 +135,8 @@ async def async_process_submission(submission_id: int):
                 overall_status = res["status"]
                 # Luu lai chi tiet loi compilation/runtime
                 failed_test_case_info = res["error"]
+                failed_test_case_obj = tc
+                failed_test_case_result = res
                 break
 
         # Cap nhat thong tin submission
@@ -147,9 +151,28 @@ async def async_process_submission(submission_id: int):
                 else "Loi bien dich ma nguon C++."
             )
         elif overall_status != SubmissionStatus.AC:
-            # Neu sai ma khong phai CE, ghi lai log loi runtime (neu co) de LLM tham khao sau nay
-            if failed_test_case_info:
-                submission.ai_hint = f"Runtime Error / Stderr:\n{failed_test_case_info}"
+            # Neu sai ma khong phai CE, goi AI Agent Service de phan tich sinh hint
+            if failed_test_case_obj and failed_test_case_result:
+                from app.services.ai_agent import AIAgentService
+                ai_service = AIAgentService()
+
+                # Chuan bi thong tin loi thuc te de LLM co them ngu canh phan tich
+                actual_out = failed_test_case_info or "Khong co thong tin standard error."
+                if overall_status == SubmissionStatus.TLE:
+                    actual_out = f"Loi chay qua thoi gian cho phep (Time Limit Exceeded > {problem.time_limit}s)."
+                elif overall_status == SubmissionStatus.MLE:
+                    actual_out = f"Loi vuot qua dung luong bo nho cho phep (Memory Limit Exceeded > {problem.memory_limit}MB)."
+
+                hint = await ai_service.generate_hint(
+                    source_code=submission.code,
+                    failed_input=failed_test_case_obj.input_data,
+                    expected_output=failed_test_case_obj.output_data,
+                    actual_output=actual_out,
+                    status=overall_status.value,
+                )
+                submission.ai_hint = hint
+            else:
+                submission.ai_hint = "Bai nop gap loi nhung khong lay duoc du lieu loi cua testcase de sinh goi y."
 
         await db.commit()
 
