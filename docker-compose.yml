@@ -1,0 +1,34 @@
+version: "3.8"
+
+services:
+  # Cơ sở dữ liệu MySQL
+  mysql_db:
+    image: mysql:8.0
+    container_name: intellijudge_mysql
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: intellijudge_db
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - intellijudge_network
+
+  # Queue Broker Redis cho Celery
+  redis_queue:
+    image: redis:alpine
+    container_name: intellijudge_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - intellijudge_network
+
+volumes:
+  mysql_data:
+
+networks:
+  intellijudge_network:
+    driver: bridge
