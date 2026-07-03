@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout";
+import HomePage from "./pages/HomePage";
 
 function App() {
   return (
@@ -8,15 +9,7 @@ function App() {
         {/* MainLayout bọc toàn bộ các trang con */}
         <Route path="/" element={<MainLayout />}>
           {/* Trang chủ - Danh sách bài tập */}
-          <Route
-            index
-            element={
-              <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm">
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">Bài tập</h2>
-                <p className="text-gray-500">Nơi hiển thị bảng danh sách các bài tập lập trình C++.</p>
-              </div>
-            }
-          />
+          <Route index element={<HomePage />} />
 
           {/* Trang Kỳ thi */}
           <Route
