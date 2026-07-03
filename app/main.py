@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
+from app.api.v1.router import api_router
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -18,6 +19,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Đăng ký API router v1
+app.include_router(api_router, prefix=settings.API_V1_STR)
+
 
 # API kiểm tra trạng thái hoạt động của hệ thống
 @app.get("/", tags=["Health"])
@@ -26,3 +30,4 @@ async def health_check():
         "status": "healthy",
         "project": settings.PROJECT_NAME,
     }
+
