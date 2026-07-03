@@ -1,21 +1,80 @@
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import MainLayout from "./layouts/MainLayout";
+
 function App() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
-      <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full text-center border border-gray-100">
-        <h1 className="text-4xl font-extrabold text-blue-700 tracking-tight mb-2">
-          IntelliJudge
-        </h1>
-        <p className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-6">
-          Online Judge System
-        </p>
-        <p className="text-gray-600 mb-8 leading-relaxed">
-          Giao diện hệ thống chấm bài và hỗ trợ sửa lỗi tự động đã được khởi tạo thành công bằng ReactJS + Vite và Tailwind CSS.
-        </p>
-        <div className="bg-blue-50 text-blue-800 p-4 rounded-xl text-sm font-semibold border border-blue-100 shadow-sm">
-          🚀 Chặng 1: Thiết lập Core và Config thành công!
-        </div>
-      </div>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        {/* MainLayout bọc toàn bộ các trang con */}
+        <Route path="/" element={<MainLayout />}>
+          {/* Trang chủ - Danh sách bài tập */}
+          <Route
+            index
+            element={
+              <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm">
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">Bài tập</h2>
+                <p className="text-gray-500">Nơi hiển thị bảng danh sách các bài tập lập trình C++.</p>
+              </div>
+            }
+          />
+
+          {/* Trang Kỳ thi */}
+          <Route
+            path="contests"
+            element={
+              <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm">
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">Kỳ thi</h2>
+                <p className="text-gray-500">Danh sách các cuộc thi lập trình đang và sắp diễn ra.</p>
+              </div>
+            }
+          />
+
+          {/* Trang Bài nộp */}
+          <Route
+            path="submissions"
+            element={
+              <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm">
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">Lịch sử nộp bài</h2>
+                <p className="text-gray-500">Xem trạng thái chấm bài và mã nguồn bài làm của bạn.</p>
+              </div>
+            }
+          />
+
+          {/* Trang Xếp hạng */}
+          <Route
+            path="rankings"
+            element={
+              <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm">
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">Bảng xếp hạng</h2>
+                <p className="text-gray-500">Bảng vàng vinh danh các sinh viên xuất sắc nhất hệ thống.</p>
+              </div>
+            }
+          />
+
+          {/* Trang Thông tin */}
+          <Route
+            path="info"
+            element={
+              <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm">
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">Thông tin dự án</h2>
+                <p className="text-gray-500">IntelliJudge - Hệ thống chấm bài & Trợ giảng AI gợi ý sửa lỗi code.</p>
+              </div>
+            }
+          />
+
+          {/* Trang 404 - Bắt lỗi đường dẫn không hợp lệ */}
+          <Route
+            path="*"
+            element={
+              <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm text-center">
+                <h2 className="text-3xl font-extrabold text-red-600 mb-2">404</h2>
+                <p className="text-gray-500">Trang bạn tìm kiếm không tồn tại.</p>
+              </div>
+            }
+          />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   );
 }
 
