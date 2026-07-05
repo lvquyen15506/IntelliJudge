@@ -100,7 +100,8 @@ async def async_process_submission(submission_id: int):
         test_cases = problem.test_cases
         if not test_cases:
             print(f"[Warning] Problem {problem.id} chua co test cases.")
-            submission.status = SubmissionStatus.AC  # Khong co testcase thi mac dinh dung
+            submission.status = SubmissionStatus.SYSTEM_ERROR
+            submission.ai_hint = "Bài tập chưa có Test Case. Vui lòng báo Giảng viên."
             submission.execution_time = 0.0
             submission.memory_used = 0.0
             await db.commit()
@@ -125,28 +126,35 @@ async def async_process_submission(submission_id: int):
         lang_id = lang_id_map.get(submission.language.lower(), 54)
 
         # Chay qua tung test case
-        for idx, tc in enumerate(test_cases, 1):
-            res = await judge0.submit_and_wait(
-                source_code=submission.code,
-                stdin=tc.input_data,
-                expected_output=tc.output_data,
-                cpu_time_limit=problem.time_limit,
-                memory_limit=problem.memory_limit,
-                language_id=lang_id,
-            )
+        try:
+            for idx, tc in enumerate(test_cases, 1):
+                res = await judge0.submit_and_wait(
+                    source_code=submission.code,
+                    stdin=tc.input_data,
+                    expected_output=tc.output_data,
+                    cpu_time_limit=problem.time_limit,
+                    memory_limit=problem.memory_limit,
+                    language_id=lang_id,
+                )
 
-            # Cap nhat thong so su dung lon nhat
-            max_time = max(max_time, res["time"])
-            max_memory = max(max_memory, res["memory"])
+                # Cap nhat thong so su dung lon nhat
+                max_time = max(max_time, res["time"])
+                max_memory = max(max_memory, res["memory"])
 
-            # Neu co test case loi, dung luon (Short-circuit) de tiet kiem tai nguyen
-            if res["status"] != SubmissionStatus.AC:
-                overall_status = res["status"]
-                # Luu lai chi tiet loi compilation/runtime
-                failed_test_case_info = res["error"]
-                failed_test_case_obj = tc
-                failed_test_case_result = res
-                break
+                # Neu co test case loi, dung luon (Short-circuit) de tiet kiem tai nguyen
+                if res["status"] != SubmissionStatus.AC:
+                    overall_status = res["status"]
+                    # Luu lai chi tiet loi compilation/runtime
+                    failed_test_case_info = res["error"]
+                    failed_test_case_obj = tc
+                    failed_test_case_result = res
+                    break
+        except Exception as e:
+            print(f"[Error] Loi ket noi hoac cham bai voi Judge0: {str(e)}")
+            submission.status = SubmissionStatus.SYSTEM_ERROR
+            submission.ai_hint = f"Lỗi kết nối Sandbox chấm bài (Judge0): {str(e)}"
+            await db.commit()
+            return
 
         # Cap nhat thong tin submission
         submission.status = overall_status
@@ -195,5 +203,10 @@ def process_submission_task(submission_id: int):
     Task Celery chay dong bo: Mo mot event loop va chay ham async thuc te.
     """
     print(f"[Celery] Bat dau xu ly cham bai cho Submission ID: {submission_id}")
-    asyncio.run(async_process_submission(submission_id))
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    try:
+        loop.run_until_complete(async_process_submission(submission_id))
+    finally:
+        loop.close()
     print(f"[Celery] Hoan thanh cham bai cho Submission ID: {submission_id}")

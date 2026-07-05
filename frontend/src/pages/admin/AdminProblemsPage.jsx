@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { 
   Loader2, Plus, UploadCloud, Trash2, X, AlertCircle, 
-  CheckCircle, FileText, Settings, Tags, ArrowLeft 
+  CheckCircle, FileText, Settings, Tags, ArrowLeft, Edit 
 } from "lucide-react";
 import api from "../../services/api";
 
@@ -14,7 +14,8 @@ function AdminProblemsPage() {
   const [showManualModal, setShowManualModal] = useState(false);
   const [showZipModal, setShowZipModal] = useState(false);
 
-  // Form thêm thủ công
+  // Form states (Thêm & Sửa)
+  const [editingProblemId, setEditingProblemId] = useState(null);
   const [title, setTitle] = useState("");
   const [difficulty, setDifficulty] = useState("Dễ");
   const [timeLimit, setTimeLimit] = useState(1.0);
@@ -67,6 +68,72 @@ function AdminProblemsPage() {
     }
   };
 
+  // Logic click sửa bài tập
+  const handleEditClick = async (prob) => {
+    try {
+      setLoading(true);
+      const response = await api.get(`/problems/${prob.id}`);
+      const data = response.data;
+
+      // Điền sẵn thông tin cơ bản
+      setTitle(data.title);
+      setTimeLimit(data.time_limit);
+      setMemoryLimit(data.memory_limit);
+      setDescription(data.description);
+
+      // Phân tích tách độ khó và tags
+      let difficultyVal = "Dễ";
+      let cleanTags = data.tags || "";
+      if (cleanTags.includes("Trung bình")) {
+        difficultyVal = "Trung bình";
+        cleanTags = cleanTags.replace(/,\s*Trung bình|Trung bình,\s*|Trung bình/g, "");
+      } else if (cleanTags.includes("Khó")) {
+        difficultyVal = "Khó";
+        cleanTags = cleanTags.replace(/,\s*Khó|Khó,\s*|Khó/g, "");
+      } else if (cleanTags.includes("Dễ")) {
+        difficultyVal = "Dễ";
+        cleanTags = cleanTags.replace(/,\s*Dễ|Dễ,\s*|Dễ/g, "");
+      }
+
+      setDifficulty(difficultyVal);
+      setTags(cleanTags.trim());
+
+      // Điền test cases hiện có hoặc khởi tạo dòng trống
+      setTestCases(
+        data.test_cases && data.test_cases.length > 0
+          ? data.test_cases.map((tc) => ({
+              input_data: tc.input_data,
+              output_data: tc.output_data,
+              is_hidden: tc.is_hidden,
+            }))
+          : [{ input_data: "", output_data: "", is_hidden: false }]
+      );
+
+      setEditingProblemId(prob.id);
+      setShowManualModal(true);
+    } catch (err) {
+      console.error(err);
+      alert("Không thể tải chi tiết bài tập để sửa. Vui lòng thử lại.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Đóng Modal thủ công & reset form
+  const handleCloseManualModal = () => {
+    setShowManualModal(false);
+    setEditingProblemId(null);
+    setTitle("");
+    setDifficulty("Dễ");
+    setTimeLimit(1.0);
+    setMemoryLimit(256);
+    setTags("Cơ bản");
+    setDescription("");
+    setTestCases([{ input_data: "", output_data: "", is_hidden: false }]);
+    setManualError(null);
+    setManualSuccess(false);
+  };
+
   // Quản lý mảng Test Cases động
   const addTestCase = () => {
     setTestCases([...testCases, { input_data: "", output_data: "", is_hidden: false }]);
@@ -98,49 +165,64 @@ function AdminProblemsPage() {
     setManualSuccess(false);
 
     try {
-      // 1. Tạo bài tập mới
       const finalTags = difficulty ? `${tags}, ${difficulty}` : tags;
-      const problemRes = await api.post("/problems", {
+      
+      const payload = {
         title,
         description,
         time_limit: parseFloat(timeLimit),
         memory_limit: parseFloat(memoryLimit),
-        tags: finalTags
-      });
+        tags: finalTags,
+        test_cases: testCases.map((tc) => ({
+          input_data: tc.input_data,
+          output_data: tc.output_data,
+          is_hidden: tc.is_hidden
+        }))
+      };
 
-      const newProblemId = problemRes.data.id;
+      if (editingProblemId) {
+        // GỌI API PUT CẬP NHẬT TOÀN DIỆN BÀI TẬP VÀ TEST CASES
+        await api.put(`/problems/${editingProblemId}`, payload);
+        setManualSuccess(true);
+        fetchProblems();
+        
+        setTimeout(() => {
+          handleCloseManualModal();
+        }, 1500);
+      } else {
+        // 1. Tạo bài tập mới
+        const problemRes = await api.post("/problems", {
+          title,
+          description,
+          time_limit: parseFloat(timeLimit),
+          memory_limit: parseFloat(memoryLimit),
+          tags: finalTags
+        });
 
-      // 2. Thêm danh sách test cases
-      await Promise.all(
-        testCases.map((tc) => 
-          api.post(`/problems/${newProblemId}/testcases`, {
-            input_data: tc.input_data,
-            output_data: tc.output_data,
-            is_hidden: tc.is_hidden
-          })
-        )
-      );
+        const newProblemId = problemRes.data.id;
 
-      setManualSuccess(true);
-      // Reset form
-      setTitle("");
-      setDifficulty("Dễ");
-      setTimeLimit(1.0);
-      setMemoryLimit(256);
-      setTags("Cơ bản");
-      setDescription("");
-      setTestCases([{ input_data: "", output_data: "", is_hidden: false }]);
-      
-      // Reload list
-      fetchProblems();
-      setTimeout(() => {
-        setShowManualModal(false);
-        setManualSuccess(false);
-      }, 1500);
+        // 2. Thêm danh sách test cases
+        await Promise.all(
+          testCases.map((tc) => 
+            api.post(`/problems/${newProblemId}/testcases`, {
+              input_data: tc.input_data,
+              output_data: tc.output_data,
+              is_hidden: tc.is_hidden
+            })
+          )
+        );
+
+        setManualSuccess(true);
+        fetchProblems();
+        
+        setTimeout(() => {
+          handleCloseManualModal();
+        }, 1500);
+      }
 
     } catch (err) {
       console.error(err);
-      setManualError(err.response?.data?.detail || "Đã xảy ra lỗi khi tạo bài tập hoặc tải test cases.");
+      setManualError(err.response?.data?.detail || "Đã xảy ra lỗi khi lưu thông tin bài tập.");
     } finally {
       setSubmittingManual(false);
     }
@@ -206,7 +288,7 @@ function AdminProblemsPage() {
             className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm px-4 py-2.5 rounded-xl transition-all duration-205 flex items-center gap-2 active:scale-95 shadow-sm shadow-blue-500/10"
           >
             <Plus className="h-4 w-4" />
-            Thêm Thủ Công
+            Thêm Bài Mới
           </button>
           
           <button
@@ -240,7 +322,7 @@ function AdminProblemsPage() {
                   <th className="py-4">Thời gian</th>
                   <th className="py-4">Bộ nhớ</th>
                   <th className="py-4">Chủ đề (Tags)</th>
-                  <th className="py-4 text-center pr-6 w-32">Thao tác</th>
+                  <th className="py-4 text-center pr-6 w-36">Thao tác</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-105 text-sm">
@@ -267,13 +349,23 @@ function AdminProblemsPage() {
                         </span>
                       </td>
                       <td className="py-4 text-center pr-6">
-                        <button
-                          onClick={() => handleDeleteProblem(prob.id)}
-                          className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all duration-150 active:scale-95"
-                          title="Xóa bài tập"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            onClick={() => handleEditClick(prob)}
+                            className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-all duration-150 active:scale-95"
+                            title="Sửa bài tập"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </button>
+                          
+                          <button
+                            onClick={() => handleDeleteProblem(prob.id)}
+                            className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all duration-150 active:scale-95"
+                            title="Xóa bài tập"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -292,7 +384,7 @@ function AdminProblemsPage() {
         )}
       </div>
 
-      {/* MODAL 1: THÊM THỦ CÔNG */}
+      {/* MODAL: THÊM & SỬA BÀI TẬP */}
       {showManualModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-100 flex flex-col animate-in fade-in zoom-in-95 duration-200">
@@ -300,11 +392,11 @@ function AdminProblemsPage() {
             {/* Header Modal */}
             <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 sticky top-0 bg-white z-10">
               <h3 className="text-lg font-black text-slate-800 flex items-center gap-2">
-                <Plus className="h-5 w-5 text-blue-600" />
-                Thêm bài tập thủ công
+                {editingProblemId ? <Edit className="h-5 w-5 text-blue-600" /> : <Plus className="h-5 w-5 text-blue-600" />}
+                {editingProblemId ? "Cập nhật bài tập" : "Thêm bài tập thủ công"}
               </h3>
               <button 
-                onClick={() => setShowManualModal(false)}
+                onClick={handleCloseManualModal}
                 className="p-1.5 hover:bg-slate-100 text-slate-450 hover:text-slate-600 rounded-lg transition-colors"
               >
                 <X className="h-5 w-5" />
@@ -324,7 +416,7 @@ function AdminProblemsPage() {
               {manualSuccess && (
                 <div className="bg-green-50 border border-green-200 text-green-700 p-4 rounded-xl text-xs flex items-center gap-2">
                   <CheckCircle className="h-4 w-4 shrink-0 text-green-500" />
-                  <span>Tạo bài tập và liên kết các test cases thành công!</span>
+                  <span>Lưu thông tin bài tập thành công!</span>
                 </div>
               )}
 
@@ -486,7 +578,7 @@ function AdminProblemsPage() {
               <div className="flex justify-end items-center gap-3 border-t border-slate-100 pt-4 bg-white sticky bottom-0 z-10">
                 <button
                   type="button"
-                  onClick={() => setShowManualModal(false)}
+                  onClick={handleCloseManualModal}
                   className="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold px-5 py-2 rounded-xl text-sm transition-all duration-200 active:scale-95"
                 >
                   Hủy bỏ
@@ -499,10 +591,10 @@ function AdminProblemsPage() {
                   {submittingManual ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      Đang xử lý tạo...
+                      Đang xử lý...
                     </>
                   ) : (
-                    "Lưu bài tập"
+                    editingProblemId ? "Cập nhật bài tập" : "Lưu bài tập"
                   )}
                 </button>
               </div>
@@ -561,7 +653,7 @@ function AdminProblemsPage() {
                 {zipFile ? (
                   <div className="space-y-1">
                     <p className="text-sm font-bold text-slate-700 truncate max-w-xs mx-auto">{zipFile.name}</p>
-                    <p className="text-[10px] text-slate-450 font-mono">{(zipFile.size / 1024).toFixed(1)} KB</p>
+                    <p className="text-[10px] text-slate-455 font-mono">{(zipFile.size / 1024).toFixed(1)} KB</p>
                   </div>
                 ) : (
                   <div>
@@ -572,13 +664,13 @@ function AdminProblemsPage() {
               </div>
 
               {/* Hướng dẫn ZIP format */}
-              <div className="bg-slate-50 rounded-xl p-3.5 border border-slate-205 text-[10px] text-slate-500 space-y-1 leading-relaxed">
+              <div className="bg-slate-50 rounded-xl p-3.5 border border-slate-205 text-[10px] text-slate-550 space-y-1 leading-relaxed">
                 <span className="font-extrabold uppercase text-slate-750 block mb-1">Cấu trúc ZIP chuẩn:</span>
                 <div>• root/</div>
                 <div className="pl-3 font-semibold text-slate-700">• problem.json <span className="text-slate-400 font-normal">(chứa title, description, time_limit, memory_limit, tags)</span></div>
                 <div className="pl-3">• tests/</div>
-                <div className="pl-6 font-semibold text-slate-700">• 1.in, 1.out <span className="text-slate-450 font-normal">(Cặp testcase số 1)</span></div>
-                <div className="pl-6 font-semibold text-slate-700">• 2_hidden.in, 2_hidden.out <span className="text-slate-450 font-normal">(Cặp testcase ẩn số 2)</span></div>
+                <div className="pl-6 font-semibold text-slate-700">• 1.in, 1.out <span className="text-slate-455 font-normal">(Cặp testcase số 1)</span></div>
+                <div className="pl-6 font-semibold text-slate-700">• 2_hidden.in, 2_hidden.out <span className="text-slate-455 font-normal">(Cặp testcase ẩn số 2)</span></div>
               </div>
 
               {/* Submit */}

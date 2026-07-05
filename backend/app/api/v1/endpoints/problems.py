@@ -254,9 +254,24 @@ async def update_problem(
             detail="De bai khong ton tai",
         )
 
-    # Cap nhat truong thong tin co thay doi
-    for field, value in problem_in.model_dump(exclude_unset=True).items():
+    # Cap nhat truong thong tin co thay doi (loai tru 'test_cases')
+    update_data = problem_in.model_dump(exclude_unset=True)
+    test_cases_data = update_data.pop("test_cases", None)
+
+    for field, value in update_data.items():
         setattr(problem, field, value)
+
+    if test_cases_data is not None:
+        # Xoa het test cases cu bang cach xoa khoi quan he (vi co cascade delete-orphan)
+        problem.test_cases.clear()
+        # Them test cases moi
+        for tc_data in test_cases_data:
+            new_tc = TestCase(
+                input_data=tc_data["input_data"],
+                output_data=tc_data["output_data"],
+                is_hidden=tc_data["is_hidden"]
+            )
+            problem.test_cases.append(new_tc)
 
     await db.commit()
     

@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
 from pydantic import BaseModel, ConfigDict
-from app.schemas.testcase import TestCaseResponse
+from app.schemas.testcase import TestCaseResponse, TestCaseCreate
 
 
 class ProblemCreate(BaseModel):
@@ -18,6 +18,7 @@ class ProblemUpdate(BaseModel):
     time_limit: Optional[float] = None
     memory_limit: Optional[float] = None
     tags: Optional[str] = None
+    test_cases: Optional[List[TestCaseCreate]] = None
 
 
 class ProblemResponse(BaseModel):

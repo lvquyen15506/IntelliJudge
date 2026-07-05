@@ -14,3 +14,4 @@ class SubmissionStatus(str, enum.Enum):
     TLE = "TLE"
     MLE = "MLE"
     CE = "CE"
+    SYSTEM_ERROR = "SYSTEM_ERROR"
