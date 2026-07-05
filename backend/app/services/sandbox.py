@@ -1,9 +1,26 @@
 import base64
 import asyncio
+import binascii
 from typing import Dict, Any
 import httpx
 from app.core.config import settings
 from app.models.enums import SubmissionStatus
+
+
+def safe_b64decode(value: str) -> str:
+    """
+    Giải mã Base64 an toàn, tự động xử lý lỗi padding và bắt lỗi binascii.Error.
+    """
+    if not value:
+        return ""
+    try:
+        padded_value = value.strip()
+        missing_padding = len(padded_value) % 4
+        if missing_padding:
+            padded_value += '=' * (4 - missing_padding)
+        return base64.b64decode(padded_value.encode("utf-8")).decode("utf-8", errors="replace")
+    except (binascii.Error, ValueError, Exception):
+        return value
 
 
 class Judge0Service:
@@ -30,7 +47,7 @@ class Judge0Service:
         # Base64 encode truoc khi truyen tin de tranh loi ky tu dac biet
         encoded_source = base64.b64encode(source_code.encode("utf-8")).decode("utf-8")
         encoded_stdin = base64.b64encode(stdin.encode("utf-8")).decode("utf-8")
-        encoded_expected = base64.b64encode(encoded_output.encode("utf-8")).decode("utf-8")
+        encoded_expected = base64.b64encode(expected_output.encode("utf-8")).decode("utf-8")
 
         # Judge0 nhan gioi han Memory theo Kilobytes (KB). 1MB = 1024KB.
         memory_limit_kb = int(memory_limit * 1024)
@@ -111,18 +128,12 @@ class Judge0Service:
         # Bien bien dich loi
         compile_output = data.get("compile_output") or ""
         if compile_output:
-            try:
-                compile_output = base64.b64decode(compile_output.encode("utf-8")).decode("utf-8")
-            except Exception:
-                pass
+            compile_output = safe_b64decode(compile_output)
 
         # Bien loi runtime
         stderr = data.get("stderr") or ""
         if stderr:
-            try:
-                stderr = base64.b64decode(stderr.encode("utf-8")).decode("utf-8")
-            except Exception:
-                pass
+            stderr = safe_b64decode(stderr)
 
         error_message = compile_output or stderr
 
