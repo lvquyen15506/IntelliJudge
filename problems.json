@@ -1,0 +1,247 @@
+[
+  {
+    "title": "Kiểm tra năm nhuận",
+    "description": "Nhập vào một năm dương lịch. Kiểm tra xem năm đó có phải năm nhuận hay không.\n\n### Input\nMột dòng duy nhất chứa số nguyên dương N (1 <= N <= 100000).\n\n### Output\nIn ra `YES` nếu năm đó là năm nhuận, ngược lại in ra `NO`.",
+    "difficulty": "Dễ",
+    "time_limit": 1.0,
+    "memory_limit": 256,
+    "tags": "Cơ bản, If-Else",
+    "test_cases": [
+      {
+        "input_data": "2000\n",
+        "expected_output": "YES\n",
+        "is_hidden": false
+      },
+      {
+        "input_data": "2001\n",
+        "expected_output": "NO\n",
+        "is_hidden": false
+      },
+      {
+        "input_data": "1900\n",
+        "expected_output": "NO\n",
+        "is_hidden": true
+      },
+      {
+        "input_data": "2400\n",
+        "expected_output": "YES\n",
+        "is_hidden": true
+      },
+      {
+        "input_data": "4\n",
+        "expected_output": "YES\n",
+        "is_hidden": true
+      }
+    ]
+  },
+  {
+    "title": "Tổng các số chẵn trong mảng",
+    "description": "Cho một mảng gồm N số nguyên. Hãy tính tổng của toàn bộ các số chẵn trong mảng đó.\n\n### Input\n- Dòng đầu chứa số nguyên dương N (1 <= N <= 1000).\n- Dòng thứ hai chứa N số nguyên cách nhau bởi khoảng trắng.\n\n### Output\nMột số nguyên duy nhất là tổng của các số chẵn trong mảng.",
+    "difficulty": "Dễ",
+    "time_limit": 1.0,
+    "memory_limit": 256,
+    "tags": "Cơ bản, Mảng",
+    "test_cases": [
+      {
+        "input_data": "5\n1 2 3 4 5\n",
+        "expected_output": "6\n",
+        "is_hidden": false
+      },
+      {
+        "input_data": "3\n1 3 5\n",
+        "expected_output": "0\n",
+        "is_hidden": false
+      },
+      {
+        "input_data": "6\n2 4 6 8 10 12\n",
+        "expected_output": "42\n",
+        "is_hidden": true
+      },
+      {
+        "input_data": "1\n-2\n",
+        "expected_output": "-2\n",
+        "is_hidden": true
+      },
+      {
+        "input_data": "4\n0 0 1 3\n",
+        "expected_output": "0\n",
+        "is_hidden": true
+      }
+    ]
+  },
+  {
+    "title": "Kiểm tra chuỗi đối xứng",
+    "description": "Nhập vào một chuỗi ký tự S không chứa khoảng trắng. Hãy kiểm tra xem S có phải chuỗi đối xứng (Palindrome) hay không.\n\n### Input\nMột dòng duy nhất chứa chuỗi S (chiều dài không quá 1000 ký tự).\n\n### Output\nIn ra `YES` nếu S là chuỗi đối xứng, ngược lại in ra `NO`.",
+    "difficulty": "Dễ",
+    "time_limit": 1.0,
+    "memory_limit": 256,
+    "tags": "Thuật toán, Chuỗi",
+    "test_cases": [
+      {
+        "input_data": "radar\n",
+        "expected_output": "YES\n",
+        "is_hidden": false
+      },
+      {
+        "input_data": "hello\n",
+        "expected_output": "NO\n",
+        "is_hidden": false
+      },
+      {
+        "input_data": "a\n",
+        "expected_output": "YES\n",
+        "is_hidden": true
+      },
+      {
+        "input_data": "abba\n",
+        "expected_output": "YES\n",
+        "is_hidden": true
+      },
+      {
+        "input_data": "abcda\n",
+        "expected_output": "NO\n",
+        "is_hidden": true
+      }
+    ]
+  },
+  {
+    "title": "Tìm kiếm nhị phân",
+    "description": "Cho mảng gồm N số nguyên đã được sắp xếp tăng dần và một số nguyên X. Hãy tìm vị trí xuất hiện của X trong mảng (chỉ số tính từ 0). Nếu có nhiều vị trí, hãy trả về một vị trí bất kỳ. Nếu không tìm thấy, in ra `-1`.\n\n### Input\n- Dòng đầu chứa N và X (1 <= N <= 100000, -10^9 <= X <= 10^9).\n- Dòng thứ hai chứa N số nguyên cách nhau bởi khoảng trắng.\n\n### Output\nIn ra vị trí xuất hiện của X trong mảng hoặc `-1`.",
+    "difficulty": "Trung bình",
+    "time_limit": 1.0,
+    "memory_limit": 256,
+    "tags": "Thuật toán, Tìm kiếm nhị phân",
+    "test_cases": [
+      {
+        "input_data": "5 3\n1 2 3 4 5\n",
+        "expected_output": "2\n",
+        "is_hidden": false
+      },
+      {
+        "input_data": "4 10\n1 2 5 8\n",
+        "expected_output": "-1\n",
+        "is_hidden": false
+      },
+      {
+        "input_data": "1 5\n5\n",
+        "expected_output": "0\n",
+        "is_hidden": true
+      },
+      {
+        "input_data": "8 7\n1 3 5 7 9 11 13 15\n",
+        "expected_output": "3\n",
+        "is_hidden": true
+      },
+      {
+        "input_data": "3 -5\n-10 -1 0\n",
+        "expected_output": "-1\n",
+        "is_hidden": true
+      }
+    ]
+  },
+  {
+    "title": "Kiểm tra đồ thị hai phía",
+    "description": "Cho đồ thị vô hướng liên thông G gồm V đỉnh và E cạnh. Hãy kiểm tra xem đồ thị G có phải là đồ thị hai phía (Bipartite Graph) hay không.\n\n### Input\n- Dòng đầu chứa V và E (1 <= V <= 1000, 0 <= E <= 10000).\n- E dòng tiếp theo, mỗi dòng chứa hai số u, v (1 <= u, v <= V) mô tả một cạnh nối vô hướng giữa u và v.\n\n### Output\nIn ra `YES` nếu đồ thị hai phía, ngược lại in ra `NO`.",
+    "difficulty": "Khó",
+    "time_limit": 1.0,
+    "memory_limit": 256,
+    "tags": "Đồ thị, BFS, DFS",
+    "test_cases": [
+      {
+        "input_data": "4 4\n1 2\n2 3\n3 4\n4 1\n",
+        "expected_output": "YES\n",
+        "is_hidden": false
+      },
+      {
+        "input_data": "3 3\n1 2\n2 3\n3 1\n",
+        "expected_output": "NO\n",
+        "is_hidden": false
+      },
+      {
+        "input_data": "2 1\n1 2\n",
+        "expected_output": "YES\n",
+        "is_hidden": true
+      },
+      {
+        "input_data": "5 5\n1 2\n2 3\n3 4\n4 5\n5 1\n",
+        "expected_output": "NO\n",
+        "is_hidden": true
+      },
+      {
+        "input_data": "6 5\n1 2\n2 3\n3 4\n4 5\n5 6\n",
+        "expected_output": "YES\n",
+        "is_hidden": true
+      }
+    ]
+  },
+  {
+    "title": "Tìm số liên thông đồ thị",
+    "description": "Cho đồ thị vô hướng gồm V đỉnh và E cạnh. Hãy đếm số lượng thành phần liên thông của đồ thị này.\n\n### Input\n- Dòng đầu chứa hai số V, E (1 <= V <= 1000, 0 <= E <= 10000).\n- E dòng tiếp theo chứa u, v (1 <= u, v <= V) mô tả cạnh vô hướng nối giữa u và v.\n\n### Output\nIn ra một số nguyên duy nhất là số lượng thành phần liên thông của đồ thị.",
+    "difficulty": "Trung bình",
+    "time_limit": 1.0,
+    "memory_limit": 256,
+    "tags": "Đồ thị, DFS, BFS",
+    "test_cases": [
+      {
+        "input_data": "5 3\n1 2\n2 3\n4 5\n",
+        "expected_output": "2\n",
+        "is_hidden": false
+      },
+      {
+        "input_data": "3 0\n",
+        "expected_output": "3\n",
+        "is_hidden": false
+      },
+      {
+        "input_data": "4 3\n1 2\n2 3\n3 4\n",
+        "expected_output": "1\n",
+        "is_hidden": true
+      },
+      {
+        "input_data": "6 2\n1 2\n3 4\n",
+        "expected_output": "4\n",
+        "is_hidden": true
+      },
+      {
+        "input_data": "1 0\n",
+        "expected_output": "1\n",
+        "is_hidden": true
+      }
+    ]
+  },
+  {
+    "title": "Quản lý nhân viên cơ bản",
+    "description": "Xây dựng mô phỏng quản lý nhân sự bằng OOP đơn giản. Nhập vào danh sách N nhân viên gồm tên và lương. Hãy tìm ra và in ra tên của nhân viên có mức lương cao nhất. Nếu có nhiều nhân viên có cùng mức lương cao nhất, hãy in ra nhân viên xuất hiện sớm nhất trong danh sách đầu vào.\n\n### Input\n- Dòng đầu chứa số nguyên dương N (1 <= N <= 100).\n- N dòng tiếp theo, mỗi dòng chứa tên nhân viên (chuỗi ký tự không chứa khoảng trắng) và mức lương (số nguyên dương, không vượt quá 10^9).\n\n### Output\nIn ra tên của nhân viên có mức lương lớn nhất.",
+    "difficulty": "Dễ",
+    "time_limit": 1.0,
+    "memory_limit": 256,
+    "tags": "OOP, Mảng, Quản lý",
+    "test_cases": [
+      {
+        "input_data": "3\nAn 1200\nBinh 1500\nChi 1000\n",
+        "expected_output": "Binh\n",
+        "is_hidden": false
+      },
+      {
+        "input_data": "2\nNam 2000\nLan 2000\n",
+        "expected_output": "Nam\n",
+        "is_hidden": false
+      },
+      {
+        "input_data": "1\nQuyen 5000\n",
+        "expected_output": "Quyen\n",
+        "is_hidden": true
+      },
+      {
+        "input_data": "4\nTeo 500\nTi 800\nTun 900\nTin 900\n",
+        "expected_output": "Tun\n",
+        "is_hidden": true
+      },
+      {
+        "input_data": "5\nEmployeeA 100\nEmployeeB 200\nEmployeeC 300\nEmployeeD 400\nEmployeeE 500\n",
+        "expected_output": "EmployeeE\n",
+        "is_hidden": true
+      }
+    ]
+  }
+]

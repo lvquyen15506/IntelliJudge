@@ -53,9 +53,14 @@ function Navbar() {
 
             {/* Hiển thị thêm tab Quản trị nếu vai trò là ADMIN hoặc SUPER_ADMIN */}
             {user && (user.role === "ADMIN" || user.role === "SUPER_ADMIN") && (
-              <NavLink to="/admin/users" className={navLinkClass}>
-                Quản trị
-              </NavLink>
+              <>
+                <NavLink to="/admin/users" className={navLinkClass}>
+                  Quản lý User
+                </NavLink>
+                <NavLink to="/admin/problems" className={navLinkClass}>
+                  Quản lý Đề bài
+                </NavLink>
+              </>
             )}
           </div>
 

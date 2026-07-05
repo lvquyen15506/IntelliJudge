@@ -10,6 +10,7 @@ import SubmissionsPage from "./pages/SubmissionsPage";
 import SubmissionDetailPage from "./pages/SubmissionDetailPage";
 import RankingsPage from "./pages/RankingsPage";
 import InfoPage from "./pages/InfoPage";
+import AdminProblemsPage from "./pages/admin/AdminProblemsPage";
 
 // Component bảo vệ Route Admin
 const AdminRoute = () => {
@@ -73,6 +74,7 @@ function App() {
             {/* Nhóm Route được bảo vệ cho Admin */}
             <Route path="admin" element={<AdminRoute />}>
               <Route path="users" element={<UserManagerPage />} />
+              <Route path="problems" element={<AdminProblemsPage />} />
             </Route>
 
             {/* Trang 404 - Bắt lỗi đường dẫn không hợp lệ */}

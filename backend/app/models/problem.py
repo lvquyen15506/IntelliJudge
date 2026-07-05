@@ -13,6 +13,7 @@ class Problem(Base):
     description: Mapped[str] = mapped_column(Text, nullable=False)
     time_limit: Mapped[float] = mapped_column(Float, nullable=False, default=1.0)  # Tinh bang giay (seconds)
     memory_limit: Mapped[float] = mapped_column(Float, nullable=False, default=256.0)  # Tinh bang Megabytes (MB)
+    tags: Mapped[Optional[str]] = mapped_column(String(255), default="Cơ bản", nullable=True)
     created_by_id: Mapped[Optional[int]] = mapped_column(
         Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True
     )

@@ -9,6 +9,7 @@ function ProblemTable() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedTag, setSelectedTag] = useState("");
 
   // Gọi API lấy dữ liệu thật từ Backend bằng useEffect
   useEffect(() => {
@@ -16,7 +17,9 @@ function ProblemTable() {
     const fetchProblems = async () => {
       try {
         setLoading(true);
-        const response = await api.get("/problems");
+        const response = await api.get("/problems", {
+          params: selectedTag ? { tag: selectedTag } : {}
+        });
         if (isMounted) {
           setProblems(response.data);
           setError(null);
@@ -41,7 +44,7 @@ function ProblemTable() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [selectedTag]);
 
   // Logic lọc tìm kiếm theo ID hoặc Tiêu đề bài tập
   const filteredProblems = problems.filter((problem) => {
@@ -84,7 +87,7 @@ function ProblemTable() {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
       {/* Thanh tìm kiếm nằm trên cùng */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5">
         <h3 className="font-extrabold text-lg text-gray-800">Danh sách thử thách</h3>
         <div className="relative w-full sm:max-w-xs">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -97,6 +100,27 @@ function ProblemTable() {
             className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200 bg-gray-50/50 focus:bg-white disabled:opacity-50"
           />
         </div>
+      </div>
+
+      {/* Hàng nút Bộ lọc Chủ đề */}
+      <div className="flex flex-wrap gap-2 mb-6 border-b border-gray-100 pb-4">
+        {["Tất cả", "Cơ bản", "Mảng", "If-else", "Cấu trúc dữ liệu", "Cây"].map((cat) => {
+          const tagValue = cat === "Tất cả" ? "" : cat;
+          const isActive = selectedTag === tagValue;
+          return (
+            <button
+              key={cat}
+              onClick={() => setSelectedTag(tagValue)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 ${
+                isActive
+                  ? "bg-blue-600 text-white shadow-sm"
+                  : "bg-slate-105 text-slate-600 hover:bg-slate-200 hover:text-slate-800 border border-slate-200/50"
+              }`}
+            >
+              {cat}
+            </button>
+          );
+        })}
       </div>
 
       {/* Trạng thái 1: Đang tải danh sách (Loading state) */}
