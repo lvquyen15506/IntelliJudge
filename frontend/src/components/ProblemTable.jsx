@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Search, Loader2 } from "lucide-react";
 import api from "../services/api";
 
 function ProblemTable() {
+  const navigate = useNavigate();
   const [problems, setProblems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -156,7 +158,10 @@ function ProblemTable() {
                       {displayId}
                     </td>
                     {/* Tiêu đề */}
-                    <td className="py-4 font-bold text-gray-700 group-hover:text-blue-600 transition-colors duration-150 cursor-pointer">
+                    <td
+                      onClick={() => navigate(`/problems/${problem.id}`)}
+                      className="py-4 font-bold text-gray-700 group-hover:text-blue-600 transition-colors duration-150 cursor-pointer"
+                    >
                       {problem.title}
                     </td>
                     {/* Badge độ khó */}

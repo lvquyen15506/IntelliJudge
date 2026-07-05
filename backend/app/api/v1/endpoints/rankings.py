@@ -1,11 +1,13 @@
 from typing import List
 from fastapi import APIRouter, Depends
+from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import joinedload
 
 from app.core.database import get_db
 from app.models.user import Ranking
+from app.models.submission import Submission
 from app.schemas.ranking import RankingResponse
 
 router = APIRouter()
@@ -31,4 +33,24 @@ async def read_rankings(
     )
     result = await db.execute(stmt)
     rankings = result.scalars().all()
-    return rankings
+
+    # Tinh toan số luợng bài đã nộp (total_submissions) động cho tung sinh vien
+    response_rankings = []
+    for r in rankings:
+        sub_count_stmt = select(func.count(Submission.id)).where(Submission.user_id == r.user_id)
+        sub_count_res = await db.execute(sub_count_stmt)
+        total_subs = sub_count_res.scalar() or 0
+
+        response_rankings.append(
+            RankingResponse(
+                id=r.id,
+                user_id=r.user_id,
+                solved_count=r.solved_count,
+                total_time=r.total_time,
+                penalty=r.penalty,
+                updated_at=r.updated_at,
+                user=r.user,
+                total_submissions=total_subs
+            )
+        )
+    return response_rankings

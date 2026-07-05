@@ -2,6 +2,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.orm import selectinload
 
 from app.api.dependencies import get_current_user
 from app.core.database import get_db
@@ -13,6 +14,7 @@ from app.schemas.submission import (
     SubmissionCreate,
     SubmissionResponse,
     SubmissionBriefResponse,
+    SubmissionListResponse,
 )
 # Import task Celery
 from app.worker.tasks import process_submission_task
@@ -58,6 +60,54 @@ async def create_submission(
     return new_submission
 
 
+@router.get("/submissions", response_model=List[SubmissionListResponse])
+async def read_submissions(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+    skip: int = 0,
+    limit: int = 100,
+):
+    """API lay danh sach cac bai nop. Sinh vien chi xem duoc cua minh, Admin xem duoc toan bo."""
+    if current_user.role in (UserRole.ADMIN, UserRole.SUPER_ADMIN):
+        stmt = (
+            select(Submission)
+            .options(selectinload(Submission.problem), selectinload(Submission.user))
+            .order_by(Submission.created_at.desc())
+            .offset(skip)
+            .limit(limit)
+        )
+    else:
+        stmt = (
+            select(Submission)
+            .where(Submission.user_id == current_user.id)
+            .options(selectinload(Submission.problem), selectinload(Submission.user))
+            .order_by(Submission.created_at.desc())
+            .offset(skip)
+            .limit(limit)
+        )
+    result = await db.execute(stmt)
+    submissions = result.scalars().all()
+
+    # Anh xa sang schema kem theo Problem Title va Username
+    response = []
+    for sub in submissions:
+        response.append(
+            SubmissionListResponse(
+                id=sub.id,
+                problem_id=sub.problem_id,
+                user_id=sub.user_id,
+                language=sub.language,
+                status=sub.status,
+                execution_time=sub.execution_time,
+                memory_used=sub.memory_used,
+                created_at=sub.created_at,
+                problem_title=sub.problem.title if sub.problem else f"Problem #{sub.problem_id}",
+                username=sub.user.username if sub.user else f"User #{sub.user_id}",
+            )
+        )
+    return response
+
+
 @router.get("/submissions/{submission_id}", response_model=SubmissionResponse)
 async def read_submission_detail(
     submission_id: int,
@@ -65,7 +115,11 @@ async def read_submission_detail(
     current_user: User = Depends(get_current_user),
 ):
     """API lay chi tiet trang thai bai nop (Dung cho Polling). Chi tac gia hoac Admin duoc xem."""
-    stmt = select(Submission).where(Submission.id == submission_id)
+    stmt = (
+        select(Submission)
+        .where(Submission.id == submission_id)
+        .options(selectinload(Submission.problem), selectinload(Submission.user))
+    )
     result = await db.execute(stmt)
     submission = result.scalar_one_or_none()
 
@@ -76,13 +130,26 @@ async def read_submission_detail(
         )
 
     # Phanquyen: Chi chu nhan hoac Admin moi duoc quyen xem detail (tranh copy code)
-    if submission.user_id != current_user.id and current_user.role != UserRole.ADMIN:
+    if submission.user_id != current_user.id and current_user.role not in (UserRole.ADMIN, UserRole.SUPER_ADMIN):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Ban khong co quyen xem chi tiet bai nop nay",
         )
 
-    return submission
+    return SubmissionResponse(
+        id=submission.id,
+        problem_id=submission.problem_id,
+        user_id=submission.user_id,
+        code=submission.code,
+        language=submission.language,
+        status=submission.status,
+        execution_time=submission.execution_time,
+        memory_used=submission.memory_used,
+        ai_hint=submission.ai_hint,
+        created_at=submission.created_at,
+        problem_title=submission.problem.title if submission.problem else f"Problem #{submission.problem_id}",
+        username=submission.user.username if submission.user else f"User #{submission.user_id}",
+    )
 
 
 @router.get("/problems/{problem_id}/submissions", response_model=List[SubmissionBriefResponse])

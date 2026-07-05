@@ -54,11 +54,21 @@ async def get_current_user(
 
 
 def require_admin(current_user: User = Depends(get_current_user)) -> User:
-    """Dependency kiem tra quyen Admin"""
-    if current_user.role != UserRole.ADMIN:
+    """Dependency kiem tra quyen Admin hoac Super Admin"""
+    if current_user.role not in (UserRole.ADMIN, UserRole.SUPER_ADMIN):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Thao tac bi tu choi: Yeu cau quyen Admin",
+        )
+    return current_user
+
+
+def require_super_admin(current_user: User = Depends(get_current_user)) -> User:
+    """Dependency kiem tra quyen Super Admin"""
+    if current_user.role != UserRole.SUPER_ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Thao tac bi tu choi: Yeu cau quyen Super Admin",
         )
     return current_user
 

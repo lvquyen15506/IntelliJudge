@@ -10,6 +10,20 @@ class UserCreate(BaseModel):
     password: str
 
 
+class UserCreateByAdmin(BaseModel):
+    username: str
+    email: str
+    password: str
+    role: UserRole
+
+
+class UserUpdateByAdmin(BaseModel):
+    username: Optional[str] = None
+    email: Optional[str] = None
+    password: Optional[str] = None
+    role: Optional[UserRole] = None
+
+
 class UserResponse(BaseModel):
     id: int
     username: str

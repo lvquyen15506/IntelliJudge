@@ -96,7 +96,7 @@ async def read_problem_detail(
         )
 
     # Kiem tra quyen xem test case an
-    is_admin = current_user is not None and current_user.role == UserRole.ADMIN
+    is_admin = current_user is not None and current_user.role in (UserRole.ADMIN, UserRole.SUPER_ADMIN)
 
     if is_admin:
         visible_cases = problem.test_cases

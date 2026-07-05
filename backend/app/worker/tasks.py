@@ -116,6 +116,14 @@ async def async_process_submission(submission_id: int):
         failed_test_case_obj = None
         failed_test_case_result = None
 
+        # Ánh xạ ngôn ngữ lập trình sang language_id của Judge0 (54: C++, 62: Java, 71: Python 3)
+        lang_id_map = {
+            "cpp": 54,
+            "java": 62,
+            "python": 71
+        }
+        lang_id = lang_id_map.get(submission.language.lower(), 54)
+
         # Chay qua tung test case
         for idx, tc in enumerate(test_cases, 1):
             res = await judge0.submit_and_wait(
@@ -124,6 +132,7 @@ async def async_process_submission(submission_id: int):
                 expected_output=tc.output_data,
                 cpu_time_limit=problem.time_limit,
                 memory_limit=problem.memory_limit,
+                language_id=lang_id,
             )
 
             # Cap nhat thong so su dung lon nhat
