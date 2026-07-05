@@ -4,8 +4,8 @@ from app.core.config import settings
 # Khoi tao ung dung Celery voi Broker va Backend la Redis
 celery_app = Celery(
     "intellijudge",
-    broker=settings.REDIS_URL,
-    backend=settings.REDIS_URL,
+    broker=settings.CELERY_BROKER_URL,
+    backend=settings.CELERY_RESULT_BACKEND,
 )
 
 celery_app.conf.update(

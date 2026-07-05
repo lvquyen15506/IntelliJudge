@@ -16,9 +16,13 @@ class Settings(BaseSettings):
 
     # Redis & Celery Configuration
     REDIS_URL: str = "redis://localhost:6379/0"
+    CELERY_BROKER_URL: str = "redis://localhost:6379/0"
+    CELERY_RESULT_BACKEND: str = "redis://localhost:6379/0"
 
     # Sandbox API Configuration (Judge0)
     JUDGE0_API_URL: str = "http://localhost:2358"
+    JUDGE0_SERVER_URL: str = "http://localhost:2358"
+    SANDBOX_URL: str = "http://localhost:2358"
     JUDGE0_API_KEY: str = ""
 
     # AI Agent LLM Configuration
@@ -36,3 +40,19 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+# Phòng thủ: Tự động sửa lại nếu người dùng cấu hình nhầm cổng của Redis (6379) vào URL của Judge0
+if "6379" in settings.JUDGE0_API_URL or settings.JUDGE0_API_URL.startswith("redis://"):
+    settings.JUDGE0_API_URL = "http://localhost:2358"
+if "6379" in settings.JUDGE0_SERVER_URL or settings.JUDGE0_SERVER_URL.startswith("redis://"):
+    settings.JUDGE0_SERVER_URL = "http://localhost:2358"
+if "6379" in settings.SANDBOX_URL or settings.SANDBOX_URL.startswith("redis://"):
+    settings.SANDBOX_URL = "http://localhost:2358"
+
+# Phòng thủ: Tự động sửa lại nếu người dùng cấu hình nhầm cổng của Judge0 (2358) vào URL của Redis
+if "2358" in settings.REDIS_URL or settings.REDIS_URL.startswith("http://"):
+    settings.REDIS_URL = "redis://localhost:6379/0"
+if "2358" in settings.CELERY_BROKER_URL or settings.CELERY_BROKER_URL.startswith("http://"):
+    settings.CELERY_BROKER_URL = "redis://localhost:6379/0"
+if "2358" in settings.CELERY_RESULT_BACKEND or settings.CELERY_RESULT_BACKEND.startswith("http://"):
+    settings.CELERY_RESULT_BACKEND = "redis://localhost:6379/0"
