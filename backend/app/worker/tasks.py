@@ -172,20 +172,37 @@ async def async_process_submission(submission_id: int):
                 submission.ai_hint = (
                     f"Compile Error:\n{failed_test_case_info}"
                     if failed_test_case_info
-                    else "Loi bien dich ma nguon C++."
+                    else "Lỗi biên dịch mã nguồn."
                 )
-            elif overall_status != SubmissionStatus.AC:
-                # Neu sai ma khong phai CE, goi AI Agent Service de phan tich sinh hint
+            elif overall_status == SubmissionStatus.AC:
+                # Gọi AI Agent Service để phân tích và đánh giá tính tối ưu / Over-engineering của bài nộp AC
+                try:
+                    from app.services.ai_agent import AIAgentService
+                    ai_service = AIAgentService()
+                    hint = await ai_service.generate_ac_review(
+                        source_code=submission.code,
+                        problem_title=problem.title if problem else None,
+                        problem_description=problem.description if problem else None,
+                    )
+                    submission.ai_hint = hint
+                except Exception as e:
+                    print(f"[AI Review AC Error]: {e}")
+                    submission.ai_hint = (
+                        "🎉 **Lời giải hoàn hảo!**\n\n"
+                        "Bài làm của bạn đã vượt qua tất cả các test case thành công."
+                    )
+            else:
+                # Nếu sai mà không phải CE/AC, gọi AI Agent Service để phân tích sinh hint
                 if failed_test_case_obj and failed_test_case_result:
                     from app.services.ai_agent import AIAgentService
                     ai_service = AIAgentService()
 
-                    # Chuan bi thong tin loi thuc te de LLM co them ngu canh phan tich
-                    actual_out = failed_test_case_info or "Khong co thong tin standard error."
+                    # Chuẩn bị thông tin lỗi thực tế để LLM có thêm ngữ cảnh phân tích
+                    actual_out = failed_test_case_info or "Không có thông tin standard error."
                     if overall_status == SubmissionStatus.TLE:
-                        actual_out = f"Loi chay qua thoi gian cho phep (Time Limit Exceeded > {problem.time_limit}s)."
+                        actual_out = f"Lỗi chạy quá thời gian cho phép (Time Limit Exceeded > {problem.time_limit}s)."
                     elif overall_status == SubmissionStatus.MLE:
-                        actual_out = f"Loi vuot qua dung luong bo nho cho phep (Memory Limit Exceeded > {problem.memory_limit}MB)."
+                        actual_out = f"Lỗi vượt quá dung lượng bộ nhớ cho phép (Memory Limit Exceeded > {problem.memory_limit}MB)."
 
                     hint = await ai_service.generate_hint(
                         source_code=submission.code,
@@ -198,7 +215,7 @@ async def async_process_submission(submission_id: int):
                     )
                     submission.ai_hint = hint
                 else:
-                    submission.ai_hint = "Bai nop gap loi nhung khong lay duoc du lieu loi cua testcase de sinh goi y."
+                    submission.ai_hint = "Bài nộp gặp lỗi nhưng không lấy được dữ liệu lỗi của testcase để sinh gợi ý."
 
             await db.commit()
 

@@ -99,3 +99,81 @@ class AIAgentService:
                     "hoặc gặp sự cố kết nối. Vui lòng thử lại sau."
                 )
 
+    async def generate_ac_review(
+        self,
+        source_code: str,
+        problem_title: str | None = None,
+        problem_description: str | None = None,
+    ) -> str:
+        """
+        Gọi LLM để phân tích bài nộp đã chạy thành công (AC - Accepted):
+        - Nhận xét tính tối ưu về thời gian (Time) và bộ nhớ (Memory).
+        - Đánh giá xem bài làm có bị Over-engineered (phức tạp hóa vấn đề, dài dòng, dùng OOP/con trỏ thừa) không.
+        - Đề xuất hướng tối ưu tinh gọn nhất theo chuẩn Competitive Programming.
+        """
+        system_prompt = (
+            "Bạn là một Giảng viên Cấu trúc Dữ liệu & Giải thuật và Chuyên gia Lập trình Thi đấu xuất sắc.\n"
+            "Bài làm của sinh viên đã chạy ĐÚNG (Accepted - AC) và vượt qua toàn bộ test case.\n"
+            "Nhiệm vụ của bạn là đọc kỹ mã nguồn của sinh viên và phân tích xem bài làm đã thực sự tối ưu nhất chưa.\n\n"
+            "NGUYÊN TẮC ĐÁNH GIÁ MÃ NGUỒN:\n"
+            "1. **Phát hiện Phức Tạp Hóa (Over-Engineering):**\n"
+            "   - Kiểm tra xem sinh viên có dùng quá nhiều Class/Interface OOP, con trỏ thông minh (shared_ptr/unique_ptr), cấp phát động trên Heap không cần thiết trong bài tập thuật toán đơn giản không.\n"
+            "   - Chỉ ra lý do tại sao việc này làm giảm hiệu năng (overhead bộ nhớ, CPU cache miss, cấp phát bộ nhớ chậm).\n\n"
+            "2. **Đánh Giá Độ Phức Tạp & Tối Ưu:**\n"
+            "   - Phân tích độ phức tạp Thời gian O(...) và Bộ nhớ O(...).\n"
+            "   - Đề xuất giải pháp/cấu trúc dữ liệu tinh gọn nhất (ví dụ: chuyển từ OOP/Tree phức tạp sang mảng phẳng parent[]/rank[], vector đơn giản).\n\n"
+            "3. **RÀNG BUỘC PHẢN HỒI:**\n"
+            "   - KHÔNG cho trực tiếp 100% code hoàn chỉnh để giải bài toán.\n"
+            "   - Cho phép viết các đoạn mã giả (pseudocode) hoặc khung hàm chính minh họa cách viết tinh gọn.\n"
+            "   - Trả lời bằng Markdown rõ ràng, khen ngợi việc bài nộp chạy ĐÚNG nhưng đưa ra góp ý nâng tầm tư duy lập trình.\n\n"
+            "CẤU TRÚC PHẢN HỒI YÊU CẦU:\n"
+            "### 🎉 1. Đánh Giá Bài Làm (Accepted)\n"
+            "- Khen ngợi sinh viên đã giải đúng bài toán.\n"
+            "- Nhận xét ngắn gọn về độ phức tạp hiện tại của bài làm.\n\n"
+            "### 🔍 2. Phân Tích Tính Tối Ưu & Khía Cạnh Cần Tinh Gọn (Over-Engineering)\n"
+            "- Nhận xét xem code có bị quá cồng kềnh, dùng thừa lớp/con trỏ/cấp phát động không.\n"
+            "- Phân tích ảnh hưởng của việc over-engineering tới bộ nhớ và tốc độ thực thi.\n\n"
+            "### 🚀 3. Hướng Giải Quyết Tối Ưu & Tinh Gọn Nhất\n"
+            "- Đề xuất phương pháp tối ưu tinh gọn nhất theo chuẩn Lập trình thi đấu (Competitive Programming).\n"
+            "- Đưa ra mã giả (pseudocode) hoặc khung hàm tinh gọn để sinh viên tham khảo refactor."
+        )
+
+        extra_info = ""
+        if problem_title:
+            extra_info += f"**Tên bài tập:** {problem_title}\n"
+        if problem_description:
+            extra_info += f"**Mô tả bài tập:** {problem_description}\n"
+
+        user_content = (
+            f"Dưới đây là bài nộp đã AC của sinh viên:\n\n"
+            f"{extra_info}"
+            "--- MÃ NGUỒN SINH VIÊN ---\n"
+            f"```\n{source_code}\n```\n\n"
+            "Hãy đọc lại mã nguồn kỹ lưỡng và phân tích tính tối ưu cũng như hướng tinh gọn bài làm."
+        )
+
+        payload = {
+            "model": self.model,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_content},
+            ],
+            "temperature": 0.2,
+        }
+
+        async with httpx.AsyncClient() as client:
+            try:
+                response = await client.post(
+                    self.api_url, json=payload, headers=self.headers, timeout=60.0
+                )
+                response.raise_for_status()
+                data = response.json()
+
+                choices = data.get("choices", [])
+                if choices:
+                    return choices[0].get("message", {}).get("content", "").strip()
+                return "Không thể trích xuất gợi ý từ phản hồi của mô hình LLM."
+            except Exception as e:
+                print(f"[LLM API Error]: {e}")
+                return "AI hiện chưa thể phân tích tối ưu do kết nối máy chủ LLM gặp sự cố."
+
