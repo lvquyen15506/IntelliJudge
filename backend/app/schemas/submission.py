@@ -19,6 +19,7 @@ class SubmissionResponse(BaseModel):
     status: SubmissionStatus
     execution_time: Optional[float]
     memory_used: Optional[float]
+    test_case_results: Optional[str] = None
     ai_hint: Optional[str]
     created_at: datetime
     problem_title: Optional[str] = None

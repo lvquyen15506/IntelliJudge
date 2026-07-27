@@ -101,15 +101,19 @@ function ProblemDetailPage() {
       const sourceCode = codes[language];
       
       // Gửi cả 'code' (theo database schema) và 'source_code' (đáp ứng yêu cầu đề bài) để đảm bảo an toàn tuyệt đối
-      await api.post("/submissions", {
+      const response = await api.post("/submissions", {
         problem_id: parseInt(id),
         language: language,
         code: sourceCode,
         source_code: sourceCode,
       });
 
-      // Điều hướng về trang lịch sử nộp bài
-      navigate("/submissions");
+      // Điều hướng thẳng tới trang chi tiết bài nộp vừa tạo để xem kết quả test case & AI
+      if (response.data?.id) {
+        navigate(`/submissions/${response.data.id}`);
+      } else {
+        navigate("/submissions");
+      }
     } catch (err) {
       console.error(err);
       setSubmitError(

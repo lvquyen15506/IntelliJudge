@@ -1,3 +1,4 @@
+import json
 import asyncio
 from celery import Celery
 from sqlalchemy.future import select
@@ -133,6 +134,7 @@ async def async_process_submission(submission_id: int):
             lang_id = lang_id_map.get(submission.language.lower(), 53)
 
             # Chay qua tung test case
+            test_case_results_list = []
             try:
                 for idx, tc in enumerate(test_cases, 1):
                     res = await judge0.submit_and_wait(
@@ -148,6 +150,17 @@ async def async_process_submission(submission_id: int):
                     max_time = max(max_time, res["time"])
                     max_memory = max(max_memory, res["memory"])
 
+                    tc_status_val = res["status"].value if hasattr(res["status"], "value") else str(res["status"])
+                    test_case_results_list.append({
+                        "index": idx,
+                        "status": tc_status_val,
+                        "time": res["time"],
+                        "memory": res["memory"],
+                        "is_hidden": tc.is_hidden,
+                        "score": 1 if res["status"] == SubmissionStatus.AC else 0,
+                        "max_score": 1
+                    })
+
                     # Neu co test case loi, dung luon (Short-circuit) de tiet kiem tai nguyen
                     if res["status"] != SubmissionStatus.AC:
                         overall_status = res["status"]
@@ -155,6 +168,18 @@ async def async_process_submission(submission_id: int):
                         failed_test_case_info = res["error"]
                         failed_test_case_obj = tc
                         failed_test_case_result = res
+                        
+                        # Danh dau cac test case con lai la SKIPPED
+                        for remaining_idx in range(idx + 1, len(test_cases) + 1):
+                            test_case_results_list.append({
+                                "index": remaining_idx,
+                                "status": "SKIPPED",
+                                "time": 0.0,
+                                "memory": 0.0,
+                                "is_hidden": test_cases[remaining_idx - 1].is_hidden,
+                                "score": 0,
+                                "max_score": 1
+                            })
                         break
             except Exception as e:
                 print(f"[Error] Loi ket noi hoac cham bai voi Judge0: {str(e)}")
@@ -167,6 +192,7 @@ async def async_process_submission(submission_id: int):
             submission.status = overall_status
             submission.execution_time = max_time
             submission.memory_used = max_memory
+            submission.test_case_results = json.dumps(test_case_results_list)
 
             if overall_status == SubmissionStatus.CE:
                 submission.ai_hint = (

@@ -145,6 +145,7 @@ async def read_submission_detail(
         status=submission.status,
         execution_time=submission.execution_time,
         memory_used=submission.memory_used,
+        test_case_results=submission.test_case_results,
         ai_hint=submission.ai_hint,
         created_at=submission.created_at,
         problem_title=submission.problem.title if submission.problem else f"Problem #{submission.problem_id}",
