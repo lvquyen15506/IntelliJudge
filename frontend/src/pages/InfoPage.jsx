@@ -16,12 +16,6 @@ function InfoPage() {
       cmd: "/usr/bin/python3 -m py_compile {src_path}",
       key: "py",
       desc: "Kiểm tra cú pháp tĩnh trước khi thực thi để hạn chế lỗi runtime."
-    },
-    {
-      lang: "Java (Temurin 21)",
-      cmd: "/usr/bin/javac {src_path} -d {exe_dir}",
-      key: "java",
-      desc: "Biên dịch bytecode chạy trên môi trường JVM JDK 21 LTS ổn định."
     }
   ];
 
@@ -145,7 +139,7 @@ function InfoPage() {
               <div>
                 <h4 className="font-bold text-slate-700 text-sm">Lỗi biên dịch (CE)</h4>
                 <p className="text-xs text-slate-450 mt-0.5 leading-relaxed">
-                  Compiler (g++ hoặc javac) phát hiện lỗi cú pháp trong mã nguồn của bạn và không thể tạo file thực thi. Hãy kiểm tra lại log lỗi biên dịch.
+                  Compiler (g++ hoặc trình thông dịch Python) phát hiện lỗi cú pháp trong mã nguồn của bạn và không thể tạo file thực thi. Hãy kiểm tra lại log lỗi biên dịch.
                 </p>
               </div>
             </div>

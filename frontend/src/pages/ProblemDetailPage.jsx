@@ -17,20 +17,6 @@ int main() {
     return 0;
 }
 `,
-  java: `import java.util.*;
-
-public class Main {
-    public static void main(String[] args) {
-        // Viết mã nguồn Java của bạn tại đây
-        Scanner sc = new Scanner(System.in);
-        if (sc.hasNextInt()) {
-            int a = sc.nextInt();
-            int b = sc.nextInt();
-            System.out.println(a + b);
-        }
-    }
-}
-`,
   python: `# Viết mã nguồn Python của bạn tại đây
 import sys
 
@@ -59,7 +45,6 @@ function ProblemDetailPage() {
   const [theme, setTheme] = useState("vs-dark");
   const [codes, setCodes] = useState({
     cpp: languageTemplates.cpp,
-    java: languageTemplates.java,
     python: languageTemplates.python,
   });
   const [submitting, setSubmitting] = useState(false);
@@ -286,7 +271,6 @@ function ProblemDetailPage() {
                 className="text-xs font-bold bg-slate-50 border border-slate-200 hover:border-slate-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all text-slate-700 cursor-pointer"
               >
                 <option value="cpp">C++ (GCC)</option>
-                <option value="java">Java (OpenJDK)</option>
                 <option value="python">Python 3</option>
               </select>
             </div>
@@ -316,7 +300,7 @@ function ProblemDetailPage() {
           <div className="flex-grow overflow-hidden bg-[#1e1e1e]">
             <Editor
               height="100%"
-              language={language === "cpp" ? "cpp" : language === "java" ? "java" : "python"}
+              language={language === "cpp" ? "cpp" : "python"}
               theme={theme}
               value={codes[language]}
               onChange={handleEditorChange}

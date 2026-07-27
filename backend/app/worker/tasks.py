@@ -124,11 +124,10 @@ async def async_process_submission(submission_id: int):
             failed_test_case_obj = None
             failed_test_case_result = None
 
-            # Ánh xạ ngôn ngữ lập trình sang language_id của Judge0 (53: C++ GCC 8.3.0, 62: Java, 71: Python 3)
+            # Ánh xạ ngôn ngữ lập trình sang language_id của Judge0 (53: C++ GCC 8.3.0, 71: Python 3)
             lang_id_map = {
                 "cpp": 53,
                 "c++": 53,
-                "java": 62,
                 "python": 71
             }
             lang_id = lang_id_map.get(submission.language.lower(), 53)
