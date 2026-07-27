@@ -194,6 +194,8 @@ async def async_process_submission(submission_id: int):
                         expected_output=failed_test_case_obj.output_data,
                         actual_output=actual_out,
                         status=overall_status.value,
+                        problem_title=problem.title if problem else None,
+                        problem_description=problem.description if problem else None,
                     )
                     submission.ai_hint = hint
                 else:
