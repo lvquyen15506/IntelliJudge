@@ -1,110 +1,155 @@
-# 🐳 Hướng Dẫn Sử Dụng DockerCho Hệ Thống IntelliJudge
+# 🐳 Hướng Dẫn Vận Hành Hệ Thống Docker Cho IntelliJudge & Judge0
 
-Tài liệu này hướng dẫn chi tiết cách khởi chạy, cập nhật, quản lý và vận hành hệ thống **IntelliJudge** bằng **Docker Compose**.
-
----
-
-## 🏗️ 1. Kiến Trúc Hàng Thể Container
-
-Hệ thống IntelliJudge được đóng gói thành các dịch vụ Docker độc lập:
-
-| Tên Service | Container Name | Cổng (Host:Container) | Chức năng |
-| :--- | :--- | :--- | :--- |
-| `mysql_db` | `intellijudge_mysql` | `3306:3306` | Cơ sở dữ liệu MySQL 8.0 |
-| `redis_queue` | `intellijudge_redis` | `6379:6379` | Broker chuyển tiếp công việc cho Celery |
-| `backend` | `intellijudge_backend` | `8000:8000` | RESTful API Server (FastAPI + Uvicorn) |
-| `celery_worker` | `intellijudge_celery_worker` | Internal | Xử lý chấm bài async & gọi AI Agent sinh Hint |
-| `frontend` | `intellijudge_frontend` | `5173:80` | Giao diện React SPA phục vụ qua Nginx |
+Tài liệu này hướng dẫn chi tiết về **kiến trúc**, **lý do phân tách**, và **quy trình khởi chạy, vận hành toàn bộ hệ thống** IntelliJudge bằng Docker.
 
 ---
 
-## ❓ 2. Khi Nào Cần Build Lại Backend / Celery Worker?
+## 💡 1. Tại Sao Lại Phân Tách Thành 2 Docker Stack Riêng Biệt?
 
-> **Trả lời câu hỏi:** Khi thay đổi code Python hoặc tối ưu Prompt trong `ai_agent.py` / `tasks.py`, **BẮT BUỘC CẦN BUILD LẠI DOCKER**.
+Hệ thống được chia làm 2 cụm Docker độc lập:
 
-### Lý do:
-Trong file `backend/Dockerfile`, mã nguồn backend được copy vào container thông qua lệnh `COPY . .` tại thời điểm build image. Do `docker-compose.yml` không gắn volume live-reload (`./backend:/app`), container chạy bản code đóng gói sẵn trong image. Celery Worker cũng nạp mã Python vào RAM khi khởi tạo.
+1. **Cụm `judge0` (Chạy trong thư mục `judge0/`):**
+   * **Nhiệm vụ:** Engine chấm bài sandbox độc lập (dịch vụ bên thứ 3). Nhận mã nguồn (C++, Python, Java...), biên dịch và thực thi an toàn trong môi trường cách ly.
+   * **Container bao gồm:** `judge0-server`, `judge0-worker`, `judge0-db` (PostgreSQL), `judge0-redis`.
 
-Do đó, sau khi chỉnh sửa code backend, bạn cần build lại image để container nhận thay đổi mới nhất.
+2. **Cụm `intellijudge` (Chạy ở thư mục gốc project):**
+   * **Nhiệm vụ:** Ứng dụng Web chính (Frontend React, Backend FastAPI, CSDL MySQL quản lý người dùng/đề bài, Celery Worker xử lý AI Agent).
+   * **Container bao gồm:** `intellijudge_frontend`, `intellijudge_backend`, `intellijudge_celery_worker`, `intellijudge_mysql`, `intellijudge_redis`.
+
+### 📌 Lý do thiết kế:
+* **Tính độc lập & Cách ly sự cố (Isolation):** Khi học sinh nộp bài nặng hoặc lặp vô tận (Infinite Loop), server Judge0 có thể quá tải nhưng Web App `IntelliJudge` vẫn hoạt động bình thường, không bị treo UI hay sập DB chính.
+* **Khả năng mở rộng (Scalability):** Trên môi trường Production thực tế, `Judge0` có thể được đặt ở một máy chủ riêng có cấu hình mạnh, tách biệt hoàn toàn với Web Server.
+* **Dễ nâng cấp & Bảo trì:** Không lo bị xung đột cấu hình DB/Redis giữa Web chính và Sandbox chấm bài.
 
 ---
 
-## 🚀 3. Các Lệnh Thao Tác Thường Dùng
+## 🏗️ 2. Danh Sách Container & Cổng (Ports)
 
-### 3.1. Khởi chạy toàn bộ hệ thống lần đầu
-Build image và khởi chạy tất cả 5 services dưới dạng background (detached mode):
+| Cụm Docker Stack | Tên Service | Container Name | Cổng (Host:Container) | Chức Năng |
+| :--- | :--- | :--- | :--- | :--- |
+| **Judge0** | `server` | `judge0-server-1` | `2358:2358` | API Sandbox chấm bài |
+| **Judge0** | `worker` | `judge0-worker-1` | Internal | Worker thực thi & biên dịch code |
+| **Judge0** | `db` | `judge0-db-1` | Internal | PostgreSQL lưu cache/lịch sử Judge0 |
+| **Judge0** | `redis` | `judge0-redis-1` | Internal | Redis queue riêng của Judge0 |
+| --- | --- | --- | --- | --- |
+| **IntelliJudge** | `frontend` | `intellijudge_frontend` | `5173:80` | Giao diện Web (React + Nginx) |
+| **IntelliJudge** | `backend` | `intellijudge_backend` | `8000:8000` | RESTful API Server (FastAPI) |
+| **IntelliJudge** | `celery_worker` | `intellijudge_celery_worker` | Internal | Async Worker (Gọi AI Agent & Chấm bài) |
+| **IntelliJudge** | `mysql_db` | `intellijudge_mysql` | `3306:3306` | CSDL chính MySQL 8.0 |
+| **IntelliJudge** | `redis_queue` | `intellijudge_redis` | `6379:6379` | Broker chuyển tiếp việc cho Celery |
+
+---
+
+## 🚀 3. Quy Trình Khởi Chạy Hệ Thống (Step-by-Step)
+
+> ⚠️ **Lưu ý quan trọng:** Bạn nên bật cụm **Judge0 trước**, sau đó mới bật cụm **IntelliJudge** để Backend FastAPI có thể kết nối ngay tới API Judge0 (cổng 2358).
+
+### Bước 1: Khởi chạy cụm Engine chấm bài (Judge0)
+
+Mở terminal tại thư mục gốc của project, di chuyển vào thư mục `judge0` và khởi chạy:
+
+```bash
+cd judge0
+docker compose up -d
+```
+
+* **Kiểm tra Judge0 đã sẵn sàng chưa:**
+  Truy cập trên trình duyệt hoặc chạy: `http://localhost:2358/system_info`
+  Nếu nhận về thông tin JSON hệ thống là Judge0 đã hoạt động thành công.
+
+* Quay lại thư mục gốc dự án:
+```bash
+cd ..
+```
+
+---
+
+### Bước 2: Khởi chạy cụm Ứng dụng chính (IntelliJudge)
+
+Tại thư mục gốc dự án (`IntelliJudge`), chạy lệnh build và khởi động 5 services:
+
 ```bash
 docker compose up -d --build
 ```
 
-### 3.2. Cập nhật & Build lại Backend + Celery Worker (Sau khi sửa code/prompt)
-Nếu bạn vừa sửa code backend (như `ai_agent.py`, `tasks.py`, `models`), hãy chạy lệnh sau để build lại image và tái tạo container:
+Lệnh này sẽ tự động build image cho `frontend`, `backend`, `celery_worker` và tải các image MySQL, Redis về để khởi chạy toàn bộ ứng dụng.
+
+---
+
+## 🔄 4. Cập Nhật Code Backend / Prompt AI (Rebuild)
+
+Khi bạn chỉnh sửa code Python trong `backend/` (như file `ai_agent.py`, `tasks.py`, `models.py`...):
+
+Chỉ cần build lại riêng **Backend** và **Celery Worker** mà **không ảnh hưởng** tới Database hay Frontend:
+
 ```bash
 docker compose up -d --build backend celery_worker
 ```
-> 💡 *Mẹo:* Lệnh này chỉ build lại backend và celery_worker, không làm gián đoạn database MySQL hay Redis.
 
-### 3.3. Xem log thời gian thực (Live Logs)
-- Xem log toàn bộ hệ thống:
+---
+
+## 📊 5. Theo Dõi Log & Quản Lý Hệ Thống
+
+### 5.1. Xem Live Log (Thời gian thực)
+* Xem log cụm IntelliJudge:
   ```bash
   docker compose logs -f
   ```
-- Xem log riêng của Backend và Celery Worker (để kiểm tra phản hồi AI / Chấm bài):
+* Xem riêng log Backend & Celery Worker (kiểm tra sinh AI hint / chấm bài):
   ```bash
   docker compose logs -f backend celery_worker
   ```
+* Xem log cụm Judge0:
+  ```bash
+  cd judge0
+  docker compose logs -f
+  ```
 
-### 3.4. Kiểm tra trạng thái các container
+### 5.2. Kiểm tra trạng thái các container
 ```bash
 docker compose ps
 ```
 
-### 3.5. Dừng hệ thống
-- Dừng hệ thống (giữ nguyên dữ liệu MySQL trong volume):
+### 5.3. Dừng hệ thống
+
+* **Dừng cụm IntelliJudge (giữ nguyên dữ liệu MySQL):**
   ```bash
   docker compose down
   ```
-- Dừng hệ thống và xóa sạch volume dữ liệu (xóa toàn bộ DB để làm lại từ đầu):
+* **Dừng cụm Judge0:**
+  ```bash
+  cd judge0
+  docker compose down
+  ```
+* **Xóa sạch dữ liệu DB để làm lại từ đầu:**
   ```bash
   docker compose down -v
   ```
 
 ---
 
-## 🛠️ 4. Cấu Hình Biến Môi Trường (Environment Variables)
+## 🛠️ 6. Cấu Hình Biến Môi Trường (Environment Variables)
 
-File cấu hình chính nằm tại `backend/.env`. Lưu ý một số biến quan trọng khi chạy trong Docker:
+File `backend/.env` quy định cách Backend kết nối tới Judge0 và LLM AI:
 
-- **LLM_API_URL**:
-  - Nếu mô hình LLM (Ollama) chạy trực tiếp trên máy Host (Windows/Linux):
-    ```env
-    LLM_API_URL=http://host.docker.internal:11434/v1
-    ```
-  - Nếu dùng OpenAI / Cloud API:
-    ```env
-    LLM_API_URL=https://api.openai.com/v1
-    LLM_API_KEY=your-api-key-here
-    ```
+```env
+# Kết nối tới Judge0 chạy ở cụm Docker riêng trên cổng 2358
+JUDGE0_API_URL=http://host.docker.internal:2358
 
-- **JUDGE0_API_URL**:
-  - Đảm bảo Judge0 kết nối đúng IP máy Host:
-    ```env
-    JUDGE0_API_URL=http://host.docker.internal:2358
-    ```
+# Cấu hình AI Agent (Local Ollama hoặc Cloud API)
+LLM_API_URL=http://host.docker.internal:11434/v1
+LLM_MODEL=qwen2.5-coder:7b
+```
 
 ---
 
-## 🔍 5. Xử Lý Sự Cố Thường Gặp (Troubleshooting)
+## 🔍 7. Khắc Phục Lỗi Thường Gặp (Troubleshooting)
 
-1. **Celery Worker vẫn ra gợi ý AI cũ:**
-   - Nguyên nhân: Chưa rebuild container `celery_worker`.
-   - Phắc phục: Chạy `docker compose up -d --build celery_worker`.
+1. **Backend báo không kết nối được Judge0 (Errno 111 Connection Refused):**
+   * Khắc phục: Kiểm tra cụm Judge0 đã bật chưa (`cd judge0 && docker compose ps`). Đảm bảo cổng `2358` đang mở.
 
-2. **Backend không kết nối được MySQL khi mới bật:**
-   - Trong `docker-compose.yml`, dịch vụ backend đã có `healthcheck` chờ MySQL sẵn sàng. Nếu bị lỗi kết nối lần đầu, chờ 10-15s hoặc kiểm tra log MySQL:
-     ```bash
-     docker compose logs mysql_db
-     ```
+2. **Celery Worker vẫn ra phản hồi AI cũ sau khi sửa Prompt:**
+   * Khắc phục: Chạy `docker compose up -d --build celery_worker` để nạp lại mã nguồn Python mới vào RAM.
 
-3. **Không gọi được LLM Local (Ollama):**
-   - Đảm bảo Ollama trên máy host đang chạy và đã cấp quyền lắng nghe IP (đặt `OLLAMA_HOST=0.0.0.0` trên máy Host nếu cần).
+3. **Chạy Docker trên Windows bị đè cổng (Port collision):**
+   * Các cổng sử dụng: `5173` (Frontend), `8000` (Backend API), `2358` (Judge0), `3306` (MySQL), `6379` (Redis). Hãy chắc chắn các phần mềm khác không chiếm những cổng này.
