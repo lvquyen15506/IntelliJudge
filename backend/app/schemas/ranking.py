@@ -8,6 +8,7 @@ class RankingResponse(BaseModel):
     id: int
     user_id: int
     solved_count: int
+    total_score: float = 0.0
     total_time: float
     penalty: int
     updated_at: datetime

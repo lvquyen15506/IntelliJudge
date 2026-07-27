@@ -9,6 +9,7 @@ class ProblemCreate(BaseModel):
     description: str
     time_limit: float = 1.0  # Tinh bang giay
     memory_limit: float = 256.0  # Tinh bang MB
+    points: float = 1.0  # Diem cho bai tap
     tags: Optional[str] = "Cơ bản"
 
 
@@ -17,6 +18,7 @@ class ProblemUpdate(BaseModel):
     description: Optional[str] = None
     time_limit: Optional[float] = None
     memory_limit: Optional[float] = None
+    points: Optional[float] = None
     tags: Optional[str] = None
     test_cases: Optional[List[TestCaseCreate]] = None
 
@@ -27,6 +29,7 @@ class ProblemResponse(BaseModel):
     description: str
     time_limit: float
     memory_limit: float
+    points: float = 1.0
     tags: Optional[str] = None
     created_by_id: Optional[int]
     created_at: datetime

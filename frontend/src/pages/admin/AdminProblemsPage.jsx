@@ -20,6 +20,7 @@ function AdminProblemsPage() {
   const [difficulty, setDifficulty] = useState("Dễ");
   const [timeLimit, setTimeLimit] = useState(1.0);
   const [memoryLimit, setMemoryLimit] = useState(256);
+  const [points, setPoints] = useState(1.0);
   const [tags, setTags] = useState("Cơ bản");
   const [description, setDescription] = useState("");
   const [testCases, setTestCases] = useState([{ input_data: "", output_data: "", is_hidden: false }]);
@@ -79,6 +80,7 @@ function AdminProblemsPage() {
       setTitle(data.title);
       setTimeLimit(data.time_limit);
       setMemoryLimit(data.memory_limit);
+      setPoints(data.points || 1.0);
       setDescription(data.description);
 
       // Phân tích tách độ khó và tags
@@ -127,6 +129,7 @@ function AdminProblemsPage() {
     setDifficulty("Dễ");
     setTimeLimit(1.0);
     setMemoryLimit(256);
+    setPoints(1.0);
     setTags("Cơ bản");
     setDescription("");
     setTestCases([{ input_data: "", output_data: "", is_hidden: false }]);
@@ -172,6 +175,7 @@ function AdminProblemsPage() {
         description,
         time_limit: parseFloat(timeLimit),
         memory_limit: parseFloat(memoryLimit),
+        points: parseFloat(points),
         tags: finalTags,
         test_cases: testCases.map((tc) => ({
           input_data: tc.input_data,
@@ -196,6 +200,7 @@ function AdminProblemsPage() {
           description,
           time_limit: parseFloat(timeLimit),
           memory_limit: parseFloat(memoryLimit),
+          points: parseFloat(points),
           tags: finalTags
         });
 
@@ -319,6 +324,7 @@ function AdminProblemsPage() {
                 <tr className="border-b border-slate-200 bg-slate-50/50 text-slate-550 text-xs font-bold uppercase tracking-wider">
                   <th className="py-4 pl-6 w-24">ID</th>
                   <th className="py-4">Tiêu đề</th>
+                  <th className="py-4">Điểm</th>
                   <th className="py-4">Thời gian</th>
                   <th className="py-4">Bộ nhớ</th>
                   <th className="py-4">Chủ đề (Tags)</th>
@@ -335,6 +341,9 @@ function AdminProblemsPage() {
                       </td>
                       <td className="py-4 font-bold text-slate-700">
                         {prob.title}
+                      </td>
+                      <td className="py-4 font-mono text-xs font-bold text-blue-600">
+                        {prob.points !== undefined && prob.points !== null ? `${prob.points} pt` : "1.0 pt"}
                       </td>
                       <td className="py-4 font-mono text-xs text-slate-650">
                         {prob.time_limit} s
@@ -448,8 +457,8 @@ function AdminProblemsPage() {
                 </div>
               </div>
 
-              {/* Hàng 2: Limits & Tags */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Hàng 2: Limits, Points & Tags */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-xs font-extrabold text-slate-550 block">Time Limit (giây) <span className="text-red-500">*</span></label>
                   <input
@@ -476,10 +485,23 @@ function AdminProblemsPage() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-extrabold text-slate-550 block">Tags (Cách nhau bằng dấu phẩy)</label>
+                  <label className="text-xs font-extrabold text-slate-550 block">Điểm tối đa <span className="text-red-500">*</span></label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0.1"
+                    required
+                    value={points}
+                    onChange={(e) => setPoints(e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-blue-500 font-mono"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-extrabold text-slate-550 block">Tags (Cách phẩy)</label>
                   <input
                     type="text"
-                    placeholder="VD: Cơ bản, Toán học"
+                    placeholder="VD: Cơ bản, Toán"
                     value={tags}
                     onChange={(e) => setTags(e.target.value)}
                     className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-blue-500"

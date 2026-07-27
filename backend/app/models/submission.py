@@ -23,6 +23,7 @@ class Submission(Base):
     )
     execution_time: Mapped[Optional[float]] = mapped_column(Float, nullable=True)  # Don vi: Giay (seconds)
     memory_used: Mapped[Optional[float]] = mapped_column(Float, nullable=True)  # Don vi: Megabytes (MB)
+    points: Mapped[Optional[float]] = mapped_column(Float, nullable=True, default=0.0)  # Diem so dat duoc cho bai nop nay
     test_case_results: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON luu chi tiet tung testcase
     ai_hint: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # Lua tru goi y tu LLM
     created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())

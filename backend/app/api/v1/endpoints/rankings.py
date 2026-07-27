@@ -19,11 +19,12 @@ async def read_rankings(
     skip: int = 0,
     limit: int = 100,
 ):
-    """API lay bang xep hang hoc sinh. Sap xep: solved_count (desc) -> total_time (asc) -> penalty (asc)."""
+    """API lay bang xep hang hoc sinh. Sap xep: total_score (desc) -> solved_count (desc) -> total_time (asc) -> penalty (asc)."""
     stmt = (
         select(Ranking)
         .options(joinedload(Ranking.user))
         .order_by(
+            Ranking.total_score.desc(),
             Ranking.solved_count.desc(),
             Ranking.total_time.asc(),
             Ranking.penalty.asc(),
@@ -46,6 +47,7 @@ async def read_rankings(
                 id=r.id,
                 user_id=r.user_id,
                 solved_count=r.solved_count,
+                total_score=r.total_score or 0.0,
                 total_time=r.total_time,
                 penalty=r.penalty,
                 updated_at=r.updated_at,

@@ -103,9 +103,12 @@ function RankingsPage() {
                   {item.user.username}
                 </div>
                 
-                {/* Solved Count */}
-                <div className="text-[10px] sm:text-xs font-semibold opacity-85 mb-4">
-                  {item.solved_count} bài đúng
+                {/* Solved Count & Total Score */}
+                <div className="text-[10px] sm:text-xs font-semibold opacity-85 mb-1">
+                  {item.total_score !== undefined ? `${item.total_score.toFixed(1)} điểm` : `${item.solved_count * 10} điểm`}
+                </div>
+                <div className="text-[9px] sm:text-[11px] text-slate-500 mb-3">
+                  ({item.solved_count} bài AC)
                 </div>
 
                 {/* Rank Badge inside Podium block */}
@@ -126,7 +129,7 @@ function RankingsPage() {
               <tr className="border-b border-slate-200 bg-slate-50/50 text-slate-500 text-xs font-bold uppercase tracking-wider">
                 <th className="py-4 pl-6 w-20">Hạng</th>
                 <th className="py-4">Tài khoản</th>
-                <th className="py-4 text-center">Điểm (Score)</th>
+                <th className="py-4 text-center">Tổng Điểm</th>
                 <th className="py-4 text-center">Bài đúng (AC)</th>
                 <th className="py-4 text-center">Đã nộp</th>
                 <th className="py-4 text-center pr-6">Tỉ lệ đạt</th>
@@ -135,7 +138,7 @@ function RankingsPage() {
             <tbody className="divide-y divide-slate-100 text-sm">
               {rankings.map((r, index) => {
                 const rank = index + 1;
-                const score = r.solved_count * 10; // 10 điểm cho mỗi bài đúng
+                const userScore = r.total_score !== undefined ? r.total_score.toFixed(2) : (r.solved_count * 10);
                 const winRate = getWinRate(r.solved_count, r.total_submissions);
                 
                 // Class nổi bật cho Top 1, 2, 3
@@ -186,7 +189,7 @@ function RankingsPage() {
                     </td>
                     {/* Điểm */}
                     <td className="py-4 text-center font-mono font-bold text-blue-600">
-                      {score}
+                      {userScore} pt
                     </td>
                     {/* Bài đúng */}
                     <td className="py-4 text-center font-mono font-bold text-emerald-650">

@@ -40,6 +40,7 @@ class Ranking(Base):
         Integer, ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False, index=True
     )
     solved_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    total_score: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)  # Tong diem cao nhat dat duoc cua cac bai
     total_time: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)  # Tong thoi gian chay các bai AC
     penalty: Mapped[int] = mapped_column(Integer, default=0, nullable=False)  # So lan nop sai truoc khi AC
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=func.now(), onupdate=func.now())

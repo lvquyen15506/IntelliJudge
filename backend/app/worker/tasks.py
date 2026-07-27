@@ -37,10 +37,15 @@ async def recalculate_user_ranking(db, user_id: int):
         problem_map.setdefault(sub.problem_id, []).append(sub)
 
     solved_count = 0
+    total_score = 0.0
     total_time = 0.0
     total_penalty = 0
 
     for problem_id, subs in problem_map.items():
+        # Lấy điểm cao nhất đạt được cho bài tập này (Mỗi bài chỉ lấy điểm cao nhất)
+        max_sub_points = max((s.points or 0.0) for s in subs)
+        total_score += max_sub_points
+
         # Kiem tra xem co submission nao AC khong
         ac_subs = [s for s in subs if s.status == SubmissionStatus.AC]
         if ac_subs:
@@ -66,6 +71,7 @@ async def recalculate_user_ranking(db, user_id: int):
         db.add(ranking)
 
     ranking.solved_count = solved_count
+    ranking.total_score = round(total_score, 2)
     ranking.total_time = total_time
     ranking.penalty = total_penalty
     await db.commit()
@@ -188,10 +194,18 @@ async def async_process_submission(submission_id: int):
                 await db.commit()
                 return
 
+            # Tính điểm bài nộp dựa trên số test cases vượt qua và điểm tối đa của đề bài
+            total_tc_count = len(test_cases)
+            passed_tc_count = sum(1 for tc in test_case_results_list if tc.get("status") == "AC")
+            problem_max_points = problem.points if (hasattr(problem, "points") and problem.points is not None) else 1.0
+            
+            sub_points = round((passed_tc_count / total_tc_count) * problem_max_points, 2) if total_tc_count > 0 else 0.0
+
             # Cap nhat thong tin submission
             submission.status = overall_status
             submission.execution_time = max_time
             submission.memory_used = max_memory
+            submission.points = sub_points
             submission.test_case_results = json.dumps(test_case_results_list)
 
             if overall_status == SubmissionStatus.CE:

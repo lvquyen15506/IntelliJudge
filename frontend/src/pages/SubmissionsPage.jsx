@@ -133,6 +133,7 @@ function SubmissionsPage() {
                   <th className="py-4 pl-6">Mã bài nộp</th>
                   <th className="py-4">Sinh viên</th>
                   <th className="py-4">Đề bài</th>
+                  <th className="py-4">Điểm</th>
                   <th className="py-4">Ngôn ngữ</th>
                   <th className="py-4">Thời gian</th>
                   <th className="py-4">Bộ nhớ</th>
@@ -162,6 +163,10 @@ function SubmissionsPage() {
                       {/* Bài tập */}
                       <td className="py-4 font-bold text-slate-700 group-hover:text-blue-600 transition-colors">
                         {sub.problem_title}
+                      </td>
+                      {/* Điểm */}
+                      <td className="py-4 font-mono font-bold text-blue-600 text-xs">
+                        {sub.points !== undefined && sub.points !== null ? `${sub.points.toFixed(2)} pt` : "0.00 pt"}
                       </td>
                       {/* Ngôn ngữ */}
                       <td className="py-4 text-slate-600">

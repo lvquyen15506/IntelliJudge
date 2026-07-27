@@ -378,7 +378,7 @@ function SubmissionDetailPage() {
                   {/* Khối thống kê tổng tài nguyên & Điểm số */}
                   <div className="bg-slate-100/70 p-4 rounded-xl border border-slate-200 text-xs sm:text-sm font-mono space-y-1 text-slate-700">
                     <div><b>Resources:</b> {submission.execution_time !== null ? `${submission.execution_time.toFixed(3)}s` : "0s"}, {submission.memory_used !== null ? `${submission.memory_used.toFixed(2)} MB` : "0 MB"}</div>
-                    <div><b>Final score:</b> <span className={submission.status === "AC" ? "text-emerald-600 font-extrabold" : "text-red-600 font-extrabold"}>{totalScore}/{maxScore}</span> ({totalScore}/{maxScore} points)</div>
+                    <div><b>Final score:</b> <span className={submission.status === "AC" ? "text-emerald-600 font-extrabold" : "text-amber-600 font-extrabold"}>{passedTestCases}/{totalTestCases}</span> ({submission.points !== undefined && submission.points !== null ? submission.points.toFixed(2) : (passedTestCases / (totalTestCases || 1)).toFixed(2)} points)</div>
                   </div>
 
                 </div>
