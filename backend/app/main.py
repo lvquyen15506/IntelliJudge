@@ -12,12 +12,37 @@ import app.models.article  # noqa
 from app.api.v1.router import api_router
 
 
+from sqlalchemy import text
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Khởi tạo tự động các bảng database nếu chưa tồn tại
     try:
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
+
+            # Tự động bổ sung các cột mới nếu bảng đã tồn tại sẵn
+            try:
+                await conn.execute(text("ALTER TABLE problems ADD COLUMN points FLOAT NOT NULL DEFAULT 1.0;"))
+            except Exception:
+                pass
+
+            try:
+                await conn.execute(text("ALTER TABLE submissions ADD COLUMN points FLOAT NULL DEFAULT 0.0;"))
+            except Exception:
+                pass
+
+            try:
+                await conn.execute(text("ALTER TABLE submissions ADD COLUMN test_case_results TEXT NULL;"))
+            except Exception:
+                pass
+
+            try:
+                await conn.execute(text("ALTER TABLE rankings ADD COLUMN total_score FLOAT NOT NULL DEFAULT 0.0;"))
+            except Exception:
+                pass
+
     except Exception as e:
         print(f"Lỗi khi tự động khởi tạo database tables: {e}")
     yield
