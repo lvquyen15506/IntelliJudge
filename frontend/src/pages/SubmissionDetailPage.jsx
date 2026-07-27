@@ -287,19 +287,6 @@ function SubmissionDetailPage() {
           ) : (
             <div className="space-y-4 min-h-[300px]">
               
-              {/* Trạng thái bài nộp Accepted (Không cần AI phân tích) */}
-              {submission.status === "AC" && (
-                <div className="bg-emerald-50 border border-emerald-100 text-emerald-800 rounded-xl p-5 text-sm flex items-start gap-3">
-                  <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
-                  <div>
-                    <h4 className="font-extrabold mb-1">Lời giải hoàn hảo!</h4>
-                    <p className="text-emerald-700 leading-relaxed">
-                      Bài làm của bạn đã vượt qua tất cả các test case thành công và đạt kết quả tốt nhất. AI không phát hiện ra lỗi logic nào để tối ưu thêm. Hãy tiếp tục giải quyết các thử thách khác!
-                    </p>
-                  </div>
-                </div>
-              )}
-
               {/* Trạng thái PENDING - Chờ phân tích */}
               {submission.status === "PENDING" && (
                 <div className="bg-slate-50 border border-slate-100 text-slate-500 rounded-xl p-8 text-center flex flex-col items-center justify-center gap-3">
@@ -311,23 +298,39 @@ function SubmissionDetailPage() {
                 </div>
               )}
 
-              {/* Lỗi (WA, CE, TLE...) nhưng đang đợi AI sinh Hint */}
-              {submission.status !== "AC" && submission.status !== "PENDING" && !submission.ai_hint && (
-                <div className="bg-purple-50/50 border border-purple-100 text-purple-800 rounded-xl p-8 text-center flex flex-col items-center justify-center gap-3">
-                  <Loader2 className="h-8 w-8 text-purple-600 animate-spin" />
-                  <div>
-                    <h4 className="font-bold text-purple-800">Trợ lý AI đang phân tích lỗi...</h4>
-                    <p className="text-xs text-purple-500 mt-1">Hệ thống đang kiểm tra và thiết lập các gợi ý sửa đổi, quá trình này mất khoảng vài giây.</p>
-                  </div>
+              {/* Chưa có ai_hint (đối với bài nộp cũ hoặc đang chờ AI) */}
+              {submission.status !== "PENDING" && !submission.ai_hint && (
+                <div className={submission.status === "AC" ? "bg-emerald-50 border border-emerald-100 text-emerald-800 rounded-xl p-5 text-sm flex items-start gap-3" : "bg-purple-50/50 border border-purple-100 text-purple-800 rounded-xl p-8 text-center flex flex-col items-center justify-center gap-3"}>
+                  {submission.status === "AC" ? (
+                    <>
+                      <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
+                      <div>
+                        <h4 className="font-extrabold mb-1">Lời giải hoàn hảo!</h4>
+                        <p className="text-emerald-700 leading-relaxed">
+                          Bài làm của bạn đã vượt qua tất cả các test case thành công. Nộp bài nộp mới để trải nghiệm gợi ý tối ưu mã nguồn từ AI.
+                        </p>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <Loader2 className="h-8 w-8 text-purple-600 animate-spin" />
+                      <div>
+                        <h4 className="font-bold text-purple-800">Trợ lý AI đang phân tích lỗi...</h4>
+                        <p className="text-xs text-purple-500 mt-1">Hệ thống đang kiểm tra và thiết lập các gợi ý sửa đổi, quá trình này mất khoảng vài giây.</p>
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
 
-              {/* Hiển thị Hint dạng Markdown */}
-              {submission.status !== "AC" && submission.ai_hint && (
+              {/* Hiển thị Hint dạng Markdown khi có ai_hint (Kể cả AC lẫn lỗi) */}
+              {submission.ai_hint && (
                 <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 font-sans text-slate-700">
                   <div className="flex items-center gap-2 text-purple-700 font-extrabold text-sm border-b border-slate-200 pb-3 mb-4">
                     <Sparkles className="h-4 w-4 animate-pulse text-purple-500" />
-                    Báo cáo Phân tích gợi ý sửa lỗi từ AI
+                    {submission.status === "AC"
+                      ? "Báo cáo Phân tích & Gợi ý Tối ưu hóa Mã nguồn từ AI"
+                      : "Báo cáo Phân tích Gợi ý Sửa lỗi từ AI"}
                   </div>
                   
                   {/* Nội dung Markdown */}
