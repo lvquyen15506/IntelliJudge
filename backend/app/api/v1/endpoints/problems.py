@@ -15,6 +15,7 @@ from app.schemas.testcase import TestCaseCreate, TestCaseResponse, TestCaseUpdat
 router = APIRouter()
 
 
+@router.get("", response_model=List[ProblemResponse])
 @router.get("/", response_model=List[ProblemResponse])
 async def read_problems(
     tag: Optional[str] = None,

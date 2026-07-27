@@ -13,6 +13,7 @@ from app.schemas.ranking import RankingResponse
 router = APIRouter()
 
 
+@router.get("", response_model=List[RankingResponse])
 @router.get("/", response_model=List[RankingResponse])
 async def read_rankings(
     db: AsyncSession = Depends(get_db),
