@@ -77,11 +77,12 @@ class Judge0Service:
 
                 # Polling kiểm tra trạng thái bài nộp
                 url_get = f"{self.base_url}/submissions/{token}?base64_encoded=true"
-                max_retries = 15
+                max_retries = 60  # Tăng từ 15 lên 60 lần (60s max)
+                sleep_interval = 0.5  # Giảm sleep interval để check nhanh hơn
                 attempts = 0
 
                 while True:
-                    await asyncio.sleep(1)
+                    await asyncio.sleep(sleep_interval)
                     attempts += 1
 
                     if attempts >= max_retries:

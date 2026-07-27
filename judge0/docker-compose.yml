@@ -3,8 +3,12 @@ version: '3.8'
 services:
   server:
     image: judge0/judge0:1.13.0
+    env_file: judge0.conf
     volumes:
       - ./judge0.conf:/etc/judge0.conf:ro
+    tmpfs:
+      - /box
+      - /tmp
     ports:
       - "2358:2358"
     privileged: true
@@ -20,9 +24,13 @@ services:
 
   worker:
     image: judge0/judge0:1.13.0
+    env_file: judge0.conf
     command: ["./scripts/workers"]
     volumes:
       - ./judge0.conf:/etc/judge0.conf:ro
+    tmpfs:
+      - /box
+      - /tmp
     privileged: true
     restart: unless-stopped
     deploy:

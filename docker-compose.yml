@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   # Cơ sở dữ liệu MySQL
   mysql_db:
@@ -15,6 +13,11 @@ services:
       - mysql_data:/var/lib/mysql
     networks:
       - intellijudge_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-prootpassword"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   # Queue Broker Redis cho Celery
   redis_queue:
@@ -23,6 +26,74 @@ services:
     restart: always
     ports:
       - "6379:6379"
+    networks:
+      - intellijudge_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Backend Service (FastAPI)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: intellijudge_backend
+    restart: always
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env
+    environment:
+      - DATABASE_URL=mysql+aiomysql://root:rootpassword@mysql_db:3306/intellijudge_db
+      - REDIS_URL=redis://redis_queue:6379/0
+      - CELERY_BROKER_URL=redis://redis_queue:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis_queue:6379/0
+      - JUDGE0_API_URL=http://host.docker.internal:2358
+    depends_on:
+      mysql_db:
+        condition: service_healthy
+      redis_queue:
+        condition: service_healthy
+    networks:
+      - intellijudge_network
+
+  # Celery Worker Service
+  celery_worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: intellijudge_celery_worker
+    restart: always
+    command: celery -A app.worker.tasks.celery_app worker --loglevel=info
+    env_file:
+      - ./backend/.env
+    environment:
+      - DATABASE_URL=mysql+aiomysql://root:rootpassword@mysql_db:3306/intellijudge_db
+      - REDIS_URL=redis://redis_queue:6379/0
+      - CELERY_BROKER_URL=redis://redis_queue:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis_queue:6379/0
+      - JUDGE0_API_URL=http://host.docker.internal:2358
+    depends_on:
+      backend:
+        condition: service_started
+      redis_queue:
+        condition: service_healthy
+    networks:
+      - intellijudge_network
+
+  # Frontend Service (React + Nginx)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: intellijudge_frontend
+    restart: always
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
     networks:
       - intellijudge_network
 
