@@ -114,3 +114,9 @@ node_modules/
 dist/
 .eslintcache
 
+# Report Generation & Assets
+tools/
+outputs/
+*.docx
+
+
