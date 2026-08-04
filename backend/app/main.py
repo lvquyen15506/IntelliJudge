@@ -43,8 +43,14 @@ async def lifespan(app: FastAPI):
             except Exception:
                 pass
 
+        # Tự động khởi tạo dữ liệu ban đầu (Admin user & Seed problems)
+        from app.db.init_db import init_db
+        from app.core.database import AsyncSessionLocal
+        async with AsyncSessionLocal() as session:
+            await init_db(session)
+
     except Exception as e:
-        print(f"Lỗi khi tự động khởi tạo database tables: {e}")
+        print(f"Lỗi khi tự động khởi tạo database tables/seed: {e}")
     yield
 
 
