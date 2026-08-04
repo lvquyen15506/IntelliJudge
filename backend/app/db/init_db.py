@@ -29,7 +29,7 @@ async def init_db(session: AsyncSession) -> None:
         admin1 = User(
             username="admin",
             email="admin@example.com",
-            hashed_password=get_password_hash("admin123"),
+            hashed_password=get_password_hash("Quyen2006.com"),
             role=UserRole.SUPER_ADMIN,
         )
         # Admin 2: admin_root / IntelliJudge@123
