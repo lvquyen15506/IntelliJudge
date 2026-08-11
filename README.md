@@ -1,6 +1,7 @@
 # 🏆 IntelliJudge - Hệ Thống Chấm Bài Lập Trình Tự Động Tích Hợp Trợ Lý AI Phân Tích Lỗi & Tối Ưu Mã Nguồn
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Release](https://img.shields.io/badge/Release-v1.0.0-blue.svg)](https://github.com/lvquyen15506/IntelliJudge/releases/tag/v1.0.0)
 [![Python](https://img.shields.io/badge/Python-3.11-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-green.svg)](https://fastapi.tiangolo.com/)
 [![React](https://img.shields.io/badge/React-18-blue.svg)](https://react.dev/)
