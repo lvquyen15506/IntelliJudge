@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 La Văn Quyền. All rights reserved.
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Terminal, Lock, Mail, User, AlertCircle, Loader2, CheckCircle2 } from "lucide-react";

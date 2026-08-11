@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 La Văn Quyền. All rights reserved.
 from datetime import datetime
 from sqlalchemy import String, Text, ForeignKey, DateTime, func, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship

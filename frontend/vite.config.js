@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 La Văn Quyền. All rights reserved.
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 

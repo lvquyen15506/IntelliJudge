@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 La Văn Quyền. All rights reserved.
 import { useState } from "react";
 import { Terminal, HelpCircle, Check, Copy, HelpCircle as HelpIcon, Sparkles } from "lucide-react";
 

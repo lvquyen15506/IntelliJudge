@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 La Văn Quyền. All rights reserved.
 import { useState, useEffect } from "react";
 import { 
   Loader2, Plus, UploadCloud, Trash2, X, AlertCircle, 

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 La Văn Quyền. All rights reserved.
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [

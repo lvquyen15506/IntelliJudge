@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 La Văn Quyền. All rights reserved.
 import { createContext, useContext, useState, useEffect } from "react";
 import api from "../services/api";
 

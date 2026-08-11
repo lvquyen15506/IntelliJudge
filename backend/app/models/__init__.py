@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 La Văn Quyền. All rights reserved.
 from app.models.base import Base
 from app.models.enums import UserRole, SubmissionStatus
 from app.models.user import User, Ranking

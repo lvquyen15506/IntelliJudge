@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 La Văn Quyền. All rights reserved.
 import { Outlet, useLocation } from "react-router-dom";
 import Navbar from "../components/Navbar";
 

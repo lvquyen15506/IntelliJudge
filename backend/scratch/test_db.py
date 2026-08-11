@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 La Văn Quyền. All rights reserved.
 import asyncio
 from app.core.database import AsyncSessionLocal
 from app.models.problem import Problem

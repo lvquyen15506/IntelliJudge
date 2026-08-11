@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 La Văn Quyền. All rights reserved.
 import { useState, useEffect } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { Shield, Plus, X, Loader2, AlertCircle, CheckCircle2, User, Mail, ShieldAlert, Edit, Trash2 } from "lucide-react";

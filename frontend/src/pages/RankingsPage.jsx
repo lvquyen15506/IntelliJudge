@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 La Văn Quyền. All rights reserved.
 import { useState, useEffect } from "react";
 import { Loader2, Trophy, Award, Search, Percent, RefreshCw } from "lucide-react";
 import api from "../services/api";

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 La Văn Quyền. All rights reserved.
 from typing import List
 from fastapi import APIRouter, Depends
 from sqlalchemy import func

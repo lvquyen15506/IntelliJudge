@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 La Văn Quyền. All rights reserved.
 import { BookOpen, Shuffle, BarChart3 } from "lucide-react";
 
 function ProblemSidebar() {

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 La Văn Quyền. All rights reserved.
 from fastapi import APIRouter
 from app.api.v1.endpoints import auth, users, problems, articles, submissions, rankings
 

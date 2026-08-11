@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 La Văn Quyền. All rights reserved.
 from datetime import datetime, timedelta, timezone
 from typing import Any, Union
 import bcrypt

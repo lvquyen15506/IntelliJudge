@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 La Văn Quyền. All rights reserved.
 from datetime import datetime
 from typing import List, Optional
 from sqlalchemy import String, Text, ForeignKey, DateTime, func, Integer, Float, Boolean
