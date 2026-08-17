@@ -3,9 +3,7 @@ services:
   mysql_db:
     image: mysql:8.0
     container_name: intellijudge_mysql
-    restart: always
-    ports:
-      - "3306:3306"
+    restart: "no"
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_DATABASE: intellijudge_db
@@ -23,9 +21,7 @@ services:
   redis_queue:
     image: redis:alpine
     container_name: intellijudge_redis
-    restart: always
-    ports:
-      - "6379:6379"
+    restart: "no"
     networks:
       - intellijudge_network
     healthcheck:
@@ -40,7 +36,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: intellijudge_backend
-    restart: always
+    restart: "no"
     ports:
       - "8000:8000"
     env_file:
@@ -51,6 +47,8 @@ services:
       - CELERY_BROKER_URL=redis://redis_queue:6379/0
       - CELERY_RESULT_BACKEND=redis://redis_queue:6379/0
       - JUDGE0_API_URL=http://host.docker.internal:2358
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       mysql_db:
         condition: service_healthy
@@ -65,7 +63,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: intellijudge_celery_worker
-    restart: always
+    restart: "no"
     command: celery -A app.worker.tasks.celery_app worker --loglevel=info
     env_file:
       - ./backend/.env
@@ -75,6 +73,8 @@ services:
       - CELERY_BROKER_URL=redis://redis_queue:6379/0
       - CELERY_RESULT_BACKEND=redis://redis_queue:6379/0
       - JUDGE0_API_URL=http://host.docker.internal:2358
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       backend:
         condition: service_started
@@ -89,7 +89,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: intellijudge_frontend
-    restart: always
+    restart: "no"
     ports:
       - "5173:80"
     depends_on:
