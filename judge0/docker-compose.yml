@@ -15,7 +15,7 @@ services:
       resources:
         limits:
           cpus: '1.0'
-          memory: 1.5G
+          memory: 512M
     depends_on:
       - db
       - redis
@@ -24,7 +24,7 @@ services:
     image: judge0/judge0:1.13.0
     env_file: judge0.conf
     environment:
-      COUNT: 2
+      COUNT: 1
     command: ["./scripts/workers"]
     volumes:
       - ./judge0.conf:/etc/judge0.conf:ro
@@ -37,7 +37,7 @@ services:
       resources:
         limits:
           cpus: '1.0'
-          memory: 1.5G
+          memory: 512M
     depends_on:
       - db
       - redis
