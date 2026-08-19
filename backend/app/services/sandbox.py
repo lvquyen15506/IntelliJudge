@@ -41,10 +41,11 @@ class Judge0Service:
         """
         candidate_urls = [
             self.base_url,
+            "http://judge0-server-1:2358",
+            "http://judge0-server:2358",
+            "http://judge0_server:2358",
             "http://host.docker.internal:2358",
             "http://172.17.0.1:2358",
-            "http://judge0_server:2358",
-            "http://judge0-server:2358",
             "http://localhost:2358",
         ]
         unique_urls = list(dict.fromkeys([u for u in candidate_urls if u]))

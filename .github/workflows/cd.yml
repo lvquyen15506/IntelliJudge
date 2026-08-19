@@ -38,3 +38,4 @@ jobs:
             cd /www/wwwroot/nexusopsai.site
             git pull origin main
             docker compose up -d --build backend celery_worker frontend
+            docker network connect intellijudge_network judge0-server-1 2>/dev/null || true
