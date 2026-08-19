@@ -34,6 +34,6 @@ jobs:
           username: ${{ secrets.GCP_VM_USERNAME }}
           key: ${{ secrets.GCP_VM_SSH_KEY }}
           script: |
-            cd /var/www/IntelliJudge
+            cd /www/wwwroot/nexusopsai.site
             git pull origin main
             docker compose up -d --build backend celery_worker frontend
