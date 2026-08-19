@@ -27,14 +27,13 @@ jobs:
           echo "🚀 Triggering Continuous Deployment (CD) Pipeline for IntelliJudge..."
           echo "Target Environment: Production / Staging Server"
 
-      # Mẫu triển khai SSH tự động lên Server thực tế (VPS / AWS / DigitalOcean):
-      # - name: Deploy via SSH to VPS
-      #   uses: appleboy/ssh-action@v1.0.3
-      #   with:
-      #     host: ${{ secrets.VPS_HOST }}
-      #     username: ${{ secrets.VPS_USERNAME }}
-      #     key: ${{ secrets.VPS_SSH_KEY }}
-      #     script: |
-      #       cd /var/www/IntelliJudge
-      #       git pull origin main
-      #       docker compose up -d --build backend celery_worker frontend
+      - name: Deploy via SSH to GCP Cloud VM
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.GCP_VM_HOST }}
+          username: ${{ secrets.GCP_VM_USERNAME }}
+          key: ${{ secrets.GCP_VM_SSH_KEY }}
+          script: |
+            cd /var/www/IntelliJudge
+            git pull origin main
+            docker compose up -d --build backend celery_worker frontend
