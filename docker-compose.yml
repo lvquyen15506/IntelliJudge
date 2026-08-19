@@ -46,7 +46,7 @@ services:
       - REDIS_URL=redis://redis_queue:6379/0
       - CELERY_BROKER_URL=redis://redis_queue:6379/0
       - CELERY_RESULT_BACKEND=redis://redis_queue:6379/0
-      - JUDGE0_API_URL=http://host.docker.internal:2358
+      - JUDGE0_API_URL=http://judge0-server-1:2358
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
@@ -72,7 +72,7 @@ services:
       - REDIS_URL=redis://redis_queue:6379/0
       - CELERY_BROKER_URL=redis://redis_queue:6379/0
       - CELERY_RESULT_BACKEND=redis://redis_queue:6379/0
-      - JUDGE0_API_URL=http://host.docker.internal:2358
+      - JUDGE0_API_URL=http://judge0-server-1:2358
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
