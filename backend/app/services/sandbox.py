@@ -27,7 +27,10 @@ def safe_b64decode(value: str) -> str:
 
 class Judge0Service:
     def __init__(self):
-        self.base_url = settings.JUDGE0_API_URL.rstrip("/")
+        url = settings.JUDGE0_API_URL.rstrip("/")
+        if "localhost" in url or "host.docker.internal" in url:
+            url = "http://judge0-server-1:2358"
+        self.base_url = url
         self.headers = {}
         # Cấu hình API Key nếu gọi qua RapidAPI hoặc tự dựng có Auth
         if settings.JUDGE0_API_KEY:
