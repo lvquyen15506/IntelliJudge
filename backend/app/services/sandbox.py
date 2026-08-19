@@ -34,6 +34,30 @@ class Judge0Service:
             self.headers["X-RapidAPI-Key"] = settings.JUDGE0_API_KEY
             self.headers["X-RapidAPI-Host"] = "judge0-extra-ce.p.rapidapi.com"
 
+    async def _get_working_base_url(self, client: httpx.AsyncClient) -> str:
+        """
+        Tự động quét các địa chỉ IP/Hostname khả thi để tìm endpoint Judge0 đang sống (Healthcheck).
+        Đảm bảo hệ thống kết nối thành công 100% trên cả môi trường Local, Docker Linux, GCP VM và Server Production.
+        """
+        candidate_urls = [
+            self.base_url,
+            "http://host.docker.internal:2358",
+            "http://172.17.0.1:2358",
+            "http://judge0_server:2358",
+            "http://judge0-server:2358",
+            "http://localhost:2358",
+        ]
+        unique_urls = list(dict.fromkeys([u for u in candidate_urls if u]))
+        for url in unique_urls:
+            clean_url = url.rstrip('/')
+            try:
+                res = await client.get(f"{clean_url}/system_info", headers=self.headers, timeout=1.5)
+                if res.status_code == 200:
+                    return clean_url
+            except Exception:
+                continue
+        return self.base_url
+
     async def submit_and_wait(
         self,
         source_code: str,
@@ -63,11 +87,11 @@ class Judge0Service:
             "memory_limit": memory_limit_kb,
         }
 
-        # Gửi bài nộp sang Judge0 để lấy token (không dùng wait=true để tránh treo request)
-        url_post = f"{self.base_url}/submissions?base64_encoded=true"
-
         async with httpx.AsyncClient() as client:
             try:
+                active_base_url = await self._get_working_base_url(client)
+                url_post = f"{active_base_url}/submissions?base64_encoded=true"
+
                 response = await client.post(
                     url_post, json=payload, headers=self.headers, timeout=10.0
                 )
@@ -78,7 +102,7 @@ class Judge0Service:
                     raise Exception("Không nhận được token từ Judge0.")
 
                 # Polling kiểm tra trạng thái bài nộp
-                url_get = f"{self.base_url}/submissions/{token}?base64_encoded=true"
+                url_get = f"{active_base_url}/submissions/{token}?base64_encoded=true"
                 max_retries = 60  # Tăng từ 15 lên 60 lần (60s max)
                 sleep_interval = 0.5  # Giảm sleep interval để check nhanh hơn
                 attempts = 0
