@@ -38,20 +38,25 @@ function SubmissionDetailPage() {
     fetchSubmissionDetail(false);
   }, [id]);
 
-  // Polling tự động refresh nếu bài nộp ở trạng thái PENDING / PROCESSING
+  // Polling tự động refresh nếu bài nộp ở trạng thái PENDING / PROCESSING hoặc AI hint chưa có
   useEffect(() => {
-    if (!submission || (submission.status !== "PENDING" && submission.status !== "PROCESSING")) {
+    if (!submission) return;
+
+    const isPending = submission.status === "PENDING" || submission.status === "PROCESSING";
+    const isWaitingForAi = !submission.ai_hint;
+
+    if (!isPending && !isWaitingForAi) {
       return;
     }
 
     const intervalId = setInterval(() => {
       fetchSubmissionDetail(true);
-    }, 1500);
+    }, 2000);
 
     return () => {
       clearInterval(intervalId);
     };
-  }, [submission?.status]);
+  }, [submission?.status, submission?.ai_hint]);
 
   // Ánh xạ tên ngôn ngữ thân thiện
   const getLanguageLabel = (lang) => {

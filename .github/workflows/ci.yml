@@ -1,0 +1,70 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 La Văn Quyền. All rights reserved.
+name: IntelliJudge CI & Release Verification
+
+on:
+  push:
+    branches: [ "main" ]
+    tags: [ "v*" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  verify-backend:
+    name: 🐍 Verify Backend & Python Code Quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Backend Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt pytest httpx
+
+      - name: Check Backend Syntax & Imports
+        run: |
+          python -m py_compile backend/run.py
+          python -c "import app.main; print('FastAPI App Import Successful!')"
+
+  verify-frontend:
+    name: ⚛️ Verify Frontend & Node Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Install Frontend Dependencies & Build
+        working-directory: ./frontend
+        run: |
+          npm ci
+          npm run build
+
+  verify-docker-compose:
+    name: 🐳 Verify Docker Compose Packaging
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Copy .env.example to backend/.env
+        run: cp backend/.env.example backend/.env
+
+      - name: Build Docker Services
+        run: docker compose build
