@@ -1,0 +1,40 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 La Văn Quyền. All rights reserved.
+name: IntelliJudge CD - Continuous Deployment
+
+on:
+  workflow_run:
+    workflows: ["IntelliJudge CI & Release Verification"]
+    types:
+      - completed
+    branches:
+      - main
+
+jobs:
+  deploy-to-server:
+    name: 🚀 Deploy to Remote VPS / Cloud Server
+    # Chỉ triển khai khi workflow CI trước đó chạy THÀNH CÔNG (Success)
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Display Deployment Status
+        run: |
+          echo "✅ CI Checks Passed Successfully!"
+          echo "🚀 Triggering Continuous Deployment (CD) Pipeline for IntelliJudge..."
+          echo "Target Environment: Production / Staging Server"
+
+      # Mẫu triển khai SSH tự động lên Server thực tế (VPS / AWS / DigitalOcean):
+      # - name: Deploy via SSH to VPS
+      #   uses: appleboy/ssh-action@v1.0.3
+      #   with:
+      #     host: ${{ secrets.VPS_HOST }}
+      #     username: ${{ secrets.VPS_USERNAME }}
+      #     key: ${{ secrets.VPS_SSH_KEY }}
+      #     script: |
+      #       cd /var/www/IntelliJudge
+      #       git pull origin main
+      #       docker compose up -d --build backend celery_worker frontend
