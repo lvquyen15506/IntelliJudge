@@ -38,4 +38,5 @@ jobs:
             cd /www/wwwroot/nexusopsai.site
             git pull origin main
             docker compose up -d --build backend celery_worker frontend
-            docker network connect intellijudge_network judge0-server-1 2>/dev/null || true
+            NET_NAME=$(docker network ls --format '{{.Name}}' | grep -i intellijudge | head -n 1)
+            [ -n "$NET_NAME" ] && docker network connect "$NET_NAME" judge0-server-1 2>/dev/null || true
