@@ -59,12 +59,12 @@ if "2358" in settings.CELERY_BROKER_URL or settings.CELERY_BROKER_URL.startswith
 if "2358" in settings.CELERY_RESULT_BACKEND or settings.CELERY_RESULT_BACKEND.startswith("http://"):
     settings.CELERY_RESULT_BACKEND = "redis://localhost:6379/0"
 
-# Phòng thủ siêu việt: Tự động chuyển đổi localhost -> host.docker.internal khi ứng dụng chạy trong Docker container
+# Phòng thủ siêu việt: Tự động chuyển đổi sang container judge0-server-1 khi ứng dụng chạy trong Docker container
 import os
 if os.path.exists("/.dockerenv") or os.environ.get("RUNNING_IN_DOCKER"):
-    if "localhost" in settings.JUDGE0_API_URL:
-        settings.JUDGE0_API_URL = settings.JUDGE0_API_URL.replace("localhost", "host.docker.internal")
-    if "localhost" in settings.JUDGE0_SERVER_URL:
-        settings.JUDGE0_SERVER_URL = settings.JUDGE0_SERVER_URL.replace("localhost", "host.docker.internal")
-    if "localhost" in settings.SANDBOX_URL:
-        settings.SANDBOX_URL = settings.SANDBOX_URL.replace("localhost", "host.docker.internal")
+    if "localhost" in settings.JUDGE0_API_URL or "host.docker.internal" in settings.JUDGE0_API_URL:
+        settings.JUDGE0_API_URL = "http://judge0-server-1:2358"
+    if "localhost" in settings.JUDGE0_SERVER_URL or "host.docker.internal" in settings.JUDGE0_SERVER_URL:
+        settings.JUDGE0_SERVER_URL = "http://judge0-server-1:2358"
+    if "localhost" in settings.SANDBOX_URL or "host.docker.internal" in settings.SANDBOX_URL:
+        settings.SANDBOX_URL = "http://judge0-server-1:2358"
