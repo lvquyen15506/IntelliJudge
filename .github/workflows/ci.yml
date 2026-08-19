@@ -29,6 +29,10 @@ jobs:
           pip install -r backend/requirements.txt pytest httpx
 
       - name: Check Backend Syntax & Imports
+        env:
+          PYTHONPATH: backend
+          DATABASE_URL: "mysql+aiomysql://root:rootpassword@localhost:3306/intellijudge_db"
+          JWT_SECRET_KEY: "secret_development_key"
         run: |
           python -m py_compile backend/run.py
           python -c "import app.main; print('FastAPI App Import Successful!')"
