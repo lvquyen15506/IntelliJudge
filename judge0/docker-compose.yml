@@ -1,9 +1,10 @@
 services:
   server:
-    image: judge0/judge0:1.13.0
+    image: judge0/judge0:1.13.1
     env_file: judge0.conf
     volumes:
       - ./judge0.conf:/etc/judge0.conf:ro
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
     tmpfs:
       - /box
       - /tmp
@@ -23,13 +24,14 @@ services:
       - intellijudge_network
 
   worker:
-    image: judge0/judge0:1.13.0
+    image: judge0/judge0:1.13.1
     env_file: judge0.conf
     environment:
       COUNT: 1
     command: ["./scripts/workers"]
     volumes:
       - ./judge0.conf:/etc/judge0.conf:ro
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
     tmpfs:
       - /box
       - /tmp
