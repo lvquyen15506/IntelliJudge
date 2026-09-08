@@ -4,7 +4,7 @@ services:
     env_file: judge0.conf
     volumes:
       - ./judge0.conf:/etc/judge0.conf:ro
-      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
     tmpfs:
       - /box
       - /tmp
@@ -31,7 +31,7 @@ services:
     command: ["./scripts/workers"]
     volumes:
       - ./judge0.conf:/etc/judge0.conf:ro
-      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
     tmpfs:
       - /box
       - /tmp
