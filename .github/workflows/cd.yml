@@ -41,3 +41,4 @@ jobs:
             docker compose build --no-cache backend celery_worker frontend
             docker compose up -d --force-recreate
             docker network connect intellijudge_network judge0-server-1 2>/dev/null || true
+            docker network connect intellijudge_network judge0-worker-1 2>/dev/null || true

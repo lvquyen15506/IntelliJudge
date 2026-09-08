@@ -3,7 +3,7 @@ services:
   mysql_db:
     image: mysql:8.0
     container_name: intellijudge_mysql
-    restart: "no"
+    restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_DATABASE: intellijudge_db
@@ -21,7 +21,7 @@ services:
   redis_queue:
     image: redis:alpine
     container_name: intellijudge_redis
-    restart: "no"
+    restart: unless-stopped
     networks:
       - intellijudge_network
     healthcheck:
@@ -36,7 +36,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: intellijudge_backend
-    restart: "no"
+    restart: unless-stopped
     ports:
       - "8000:8000"
     env_file:
@@ -63,7 +63,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: intellijudge_celery_worker
-    restart: "no"
+    restart: unless-stopped
     command: celery -A app.worker.tasks.celery_app worker --loglevel=info
     env_file:
       - ./backend/.env
@@ -89,7 +89,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: intellijudge_frontend
-    restart: "no"
+    restart: unless-stopped
     ports:
       - "5173:80"
     depends_on:
