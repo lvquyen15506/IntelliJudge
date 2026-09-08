@@ -1,5 +1,8 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2026 La Văn Quyền. All rights reserved.
+from typing import List
+import os
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -8,6 +11,9 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     DEBUG: bool = True
 
+    # CORS
+    BACKEND_CORS_ORIGINS: List[str] = ["http://localhost:5173", "http://localhost:3000"]
+
     # Database Configuration
     DATABASE_URL: str
 
@@ -15,6 +21,7 @@ class Settings(BaseSettings):
     JWT_SECRET_KEY: str
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440
+    FIRST_SUPERUSER_PASSWORD: str = "IntelliJudge@123"
 
     # Redis & Celery Configuration
     REDIS_URL: str = "redis://localhost:6379/0"
@@ -40,31 +47,22 @@ class Settings(BaseSettings):
         extra="ignore"
     )
 
+    @field_validator("JUDGE0_API_URL", "JUDGE0_SERVER_URL", "SANDBOX_URL", mode="after")
+    @classmethod
+    def validate_judge0_urls(cls, v: str) -> str:
+        if v.startswith("redis://"):
+            raise ValueError(f"Invalid URL scheme for Judge0: {v}")
+        if os.path.exists("/.dockerenv") or os.environ.get("RUNNING_IN_DOCKER"):
+            if "localhost" in v or "host.docker.internal" in v:
+                return "http://judge0-server-1:2358"
+        return v
+
+    @field_validator("REDIS_URL", "CELERY_BROKER_URL", "CELERY_RESULT_BACKEND", mode="after")
+    @classmethod
+    def validate_redis_urls(cls, v: str) -> str:
+        if v.startswith("http://") or v.startswith("https://"):
+            raise ValueError(f"Invalid URL scheme for Redis: {v}")
+        return v
+
 
 settings = Settings()
-
-# Phòng thủ: Tự động sửa lại nếu người dùng cấu hình nhầm cổng của Redis (6379) vào URL của Judge0
-if "6379" in settings.JUDGE0_API_URL or settings.JUDGE0_API_URL.startswith("redis://"):
-    settings.JUDGE0_API_URL = "http://localhost:2358"
-if "6379" in settings.JUDGE0_SERVER_URL or settings.JUDGE0_SERVER_URL.startswith("redis://"):
-    settings.JUDGE0_SERVER_URL = "http://localhost:2358"
-if "6379" in settings.SANDBOX_URL or settings.SANDBOX_URL.startswith("redis://"):
-    settings.SANDBOX_URL = "http://localhost:2358"
-
-# Phòng thủ: Tự động sửa lại nếu người dùng cấu hình nhầm cổng của Judge0 (2358) vào URL của Redis
-if "2358" in settings.REDIS_URL or settings.REDIS_URL.startswith("http://"):
-    settings.REDIS_URL = "redis://localhost:6379/0"
-if "2358" in settings.CELERY_BROKER_URL or settings.CELERY_BROKER_URL.startswith("http://"):
-    settings.CELERY_BROKER_URL = "redis://localhost:6379/0"
-if "2358" in settings.CELERY_RESULT_BACKEND or settings.CELERY_RESULT_BACKEND.startswith("http://"):
-    settings.CELERY_RESULT_BACKEND = "redis://localhost:6379/0"
-
-# Phòng thủ siêu việt: Tự động chuyển đổi sang container judge0-server-1 khi ứng dụng chạy trong Docker container
-import os
-if os.path.exists("/.dockerenv") or os.environ.get("RUNNING_IN_DOCKER"):
-    if "localhost" in settings.JUDGE0_API_URL or "host.docker.internal" in settings.JUDGE0_API_URL:
-        settings.JUDGE0_API_URL = "http://judge0-server-1:2358"
-    if "localhost" in settings.JUDGE0_SERVER_URL or "host.docker.internal" in settings.JUDGE0_SERVER_URL:
-        settings.JUDGE0_SERVER_URL = "http://judge0-server-1:2358"
-    if "localhost" in settings.SANDBOX_URL or "host.docker.internal" in settings.SANDBOX_URL:
-        settings.SANDBOX_URL = "http://judge0-server-1:2358"

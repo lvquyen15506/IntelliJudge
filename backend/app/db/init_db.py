@@ -5,6 +5,7 @@ import json
 import logging
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from app.core.config import settings
 from app.core.security import get_password_hash
 from app.models.user import User
 from app.models.enums import UserRole
@@ -27,18 +28,18 @@ async def init_db(session: AsyncSession) -> None:
     if not admin_exists:
         logger.info("[INIT_DB] Chưa tìm thấy tài khoản Admin nào. Đang tạo các tài khoản Admin mặc định...")
         
-        # Admin 1: admin / admin123
+        # Admin 1: admin
         admin1 = User(
             username="admin",
             email="admin@example.com",
-            hashed_password=get_password_hash("Quyen2006.com"),
+            hashed_password=get_password_hash(settings.FIRST_SUPERUSER_PASSWORD),
             role=UserRole.SUPER_ADMIN,
         )
-        # Admin 2: admin_root / IntelliJudge@123
+        # Admin 2: admin_root
         admin2 = User(
             username="admin_root",
             email="admin_root@example.com",
-            hashed_password=get_password_hash("IntelliJudge@123"),
+            hashed_password=get_password_hash(settings.FIRST_SUPERUSER_PASSWORD),
             role=UserRole.SUPER_ADMIN,
         )
         

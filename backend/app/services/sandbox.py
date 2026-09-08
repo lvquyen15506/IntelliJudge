@@ -62,24 +62,23 @@ class Judge0Service:
                 continue
         return self.base_url
 
-    async def submit_and_wait(
+    async def submit_async(
         self,
         source_code: str,
         stdin: str,
         expected_output: str,
+        callback_url: str,
         cpu_time_limit: float = 1.0,
-        memory_limit: float = 256.0,  # Don vi: MB
-        language_id: int = 54,  # C++ (GCC 9.2.0) hoac phu hop voi Judge0
-    ) -> Dict[str, Any]:
+        memory_limit: float = 256.0,
+        language_id: int = 54,
+    ) -> str:
         """
-        Gui code len Judge0, doi chay dong bo va tra ve ket qua da duoc anh xa.
+        Gui code len Judge0 cung voi callback_url. 
+        Ham se khong cho ket qua ma chi tra ve token (Non-blocking).
         """
-        # Base64 encode truoc khi truyen tin de tranh loi ky tu dac biet
         encoded_source = base64.b64encode(source_code.encode("utf-8")).decode("utf-8")
         encoded_stdin = base64.b64encode(stdin.encode("utf-8")).decode("utf-8")
         encoded_expected = base64.b64encode(expected_output.encode("utf-8")).decode("utf-8")
-
-        # Judge0 nhan gioi han Memory theo Kilobytes (KB). 1MB = 1024KB.
         memory_limit_kb = int(memory_limit * 1024)
 
         payload = {
@@ -89,6 +88,7 @@ class Judge0Service:
             "expected_output": encoded_expected,
             "cpu_time_limit": cpu_time_limit,
             "memory_limit": memory_limit_kb,
+            "callback_url": callback_url,
         }
 
         async with httpx.AsyncClient() as client:
@@ -104,41 +104,10 @@ class Judge0Service:
                 token = data.get("token")
                 if not token:
                     raise Exception("Không nhận được token từ Judge0.")
-
-                # Polling kiểm tra trạng thái bài nộp
-                url_get = f"{active_base_url}/submissions/{token}?base64_encoded=true"
-                max_retries = 60  # Tăng từ 15 lên 60 lần (60s max)
-                sleep_interval = 0.5  # Giảm sleep interval để check nhanh hơn
-                attempts = 0
-
-                while True:
-                    await asyncio.sleep(sleep_interval)
-                    attempts += 1
-
-                    if attempts >= max_retries:
-                        raise Exception("Judge0 Timeout: Sandbox không phản hồi kết quả.")
-
-                    status_res = await client.get(url_get, headers=self.headers, timeout=10.0)
-                    status_res.raise_for_status()
-                    status_data = status_res.json()
-
-                    # Lấy status id từ Judge0 (1: In Queue, 2: Processing)
-                    status_id = status_data.get("status", {}).get("id", 1)
-                    if status_id not in [1, 2]:
-                        return self._parse_result(status_data)
-
+                return token
             except Exception as e:
-                # Nếu là lỗi timeout của chúng ta, raise ngược lên cho tasks.py bắt
-                if "Judge0 Timeout" in str(e):
-                    raise e
-                
-                # Với các lỗi kết nối khác, trả về trạng thái lỗi hệ thống
-                return {
-                    "status": SubmissionStatus.CE,
-                    "time": 0.0,
-                    "memory": 0.0,
-                    "error": f"Loi he thong Sandbox: {str(e)}",
-                }
+                print(f"[Sandbox Error] {e}")
+                return ""
 
     def _parse_result(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """

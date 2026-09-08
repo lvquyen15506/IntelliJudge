@@ -22,28 +22,9 @@ async def lifespan(app: FastAPI):
     # Khởi tạo tự động các bảng database nếu chưa tồn tại
     try:
         async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
-
-            # Tự động bổ sung các cột mới nếu bảng đã tồn tại sẵn
-            try:
-                await conn.execute(text("ALTER TABLE problems ADD COLUMN points FLOAT NOT NULL DEFAULT 1.0;"))
-            except Exception:
-                pass
-
-            try:
-                await conn.execute(text("ALTER TABLE submissions ADD COLUMN points FLOAT NULL DEFAULT 0.0;"))
-            except Exception:
-                pass
-
-            try:
-                await conn.execute(text("ALTER TABLE submissions ADD COLUMN test_case_results TEXT NULL;"))
-            except Exception:
-                pass
-
-            try:
-                await conn.execute(text("ALTER TABLE rankings ADD COLUMN total_score FLOAT NOT NULL DEFAULT 0.0;"))
-            except Exception:
-                pass
+            # Giai doan nay DB da duoc quan ly boi Alembic,
+            # khong su dung Base.metadata.create_all() hay ALTER TABLE tai day nua.
+            pass
 
         # Tự động khởi tạo dữ liệu ban đầu (Admin user & Seed problems)
         from app.db.init_db import init_db
@@ -67,7 +48,7 @@ app = FastAPI(
 # Cấu hình CORS cho phép gọi API từ frontend (có thể điều chỉnh cụ thể hơn khi lên production)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.BACKEND_CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

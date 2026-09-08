@@ -7,14 +7,19 @@ import jwt
 from app.core.config import settings
 
 
+import hashlib
+
+def _pre_hash_password(password: str) -> bytes:
+    """Bam password bang SHA-256 truoc de tranh loi bcrypt 72-byte limit"""
+    return hashlib.sha256(password.encode("utf-8")).hexdigest().encode("utf-8")
+
+
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Xac thuc mat khau goc voi mat khau da duoc bam"""
     if not plain_password or not hashed_password:
         return False
     try:
-        password_bytes = plain_password.encode("utf-8")
-        if len(password_bytes) > 72:
-            password_bytes = password_bytes[:72]
+        password_bytes = _pre_hash_password(plain_password)
         hash_bytes = hashed_password.encode("utf-8")
         return bcrypt.checkpw(password_bytes, hash_bytes)
     except Exception:
@@ -22,10 +27,8 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 
 def get_password_hash(password: str) -> str:
-    """Bam mat khau bang bcrypt"""
-    password_bytes = password.encode("utf-8")
-    if len(password_bytes) > 72:
-        password_bytes = password_bytes[:72]
+    """Bam mat khau bang bcrypt voi sha256 pre-hashing"""
+    password_bytes = _pre_hash_password(password)
     salt = bcrypt.gensalt()
     return bcrypt.hashpw(password_bytes, salt).decode("utf-8")
 

@@ -111,6 +111,15 @@ async def import_problems_from_zip(
         import json
         
         with zipfile.ZipFile(io.BytesIO(file_bytes)) as z:
+            # Check for Zip Bomb
+            MAX_TOTAL_SIZE = 50 * 1024 * 1024  # 50MB
+            total_size = sum(info.file_size for info in z.infolist())
+            if total_size > MAX_TOTAL_SIZE:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="File ZIP chứa dung lượng giải nén quá lớn (vượt quá 50MB), nghi ngờ Zip Bomb."
+                )
+
             # Check if problem.json exists
             if "problem.json" not in z.namelist():
                 raise HTTPException(
