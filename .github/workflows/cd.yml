@@ -34,11 +34,10 @@ jobs:
           username: ${{ secrets.GCP_VM_USERNAME }}
           key: ${{ secrets.GCP_VM_SSH_KEY }}
           script: |
+            docker network create intellijudge_network 2>/dev/null || true
             cd /www/wwwroot/nexusopsai.site/judge0 && docker compose up -d
             cd /www/wwwroot/nexusopsai.site
             git pull origin main
             docker compose down --remove-orphans 2>/dev/null || true
             docker compose build --no-cache backend celery_worker frontend
             docker compose up -d --force-recreate
-            docker network connect intellijudge_network judge0-server-1 2>/dev/null || true
-            docker network connect intellijudge_network judge0-worker-1 2>/dev/null || true

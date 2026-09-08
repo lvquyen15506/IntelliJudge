@@ -102,5 +102,4 @@ volumes:
 
 networks:
   intellijudge_network:
-    name: intellijudge_network
-    driver: bridge
+    external: true

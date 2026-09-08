@@ -19,6 +19,9 @@ services:
     depends_on:
       - db
       - redis
+    networks:
+      - default
+      - intellijudge_network
 
   worker:
     image: judge0/judge0:1.13.0
@@ -41,6 +44,9 @@ services:
     depends_on:
       - db
       - redis
+    networks:
+      - default
+      - intellijudge_network
 
   db:
     image: postgres:13.0
@@ -60,3 +66,9 @@ services:
 volumes:
   postgres-data:
   redis-data:
+
+networks:
+  default:
+    name: judge0_default
+  intellijudge_network:
+    external: true
