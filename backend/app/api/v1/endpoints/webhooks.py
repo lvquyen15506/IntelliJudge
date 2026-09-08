@@ -99,18 +99,23 @@ async def judge0_webhook(
             r["time"] = result["time"]
             r["memory"] = result["memory"]
             r["score"] = 1 if result["status"] == SubmissionStatus.AC else 0
+            if result.get("error"):
+                r["error"] = result["error"]
             found = True
             break
             
     if not found:
-        current_results.append({
+        new_result = {
             "index": tc_index,
             "status": result["status_val"],
             "time": result["time"],
             "memory": result["memory"],
             "score": 1 if result["status"] == SubmissionStatus.AC else 0,
             "max_score": 1
-        })
+        }
+        if result.get("error"):
+            new_result["error"] = result["error"]
+        current_results.append(new_result)
         
     submission.test_case_results = json.dumps(current_results)
     

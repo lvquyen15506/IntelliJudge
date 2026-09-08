@@ -388,6 +388,19 @@ function SubmissionDetailPage() {
                     <div><b>Final score:</b> <span className={submission.status === "AC" ? "text-emerald-600 font-extrabold" : "text-amber-600 font-extrabold"}>{passedTestCases}/{totalTestCases}</span> ({submission.points !== undefined && submission.points !== null ? submission.points.toFixed(2) : (passedTestCases / (totalTestCases || 1)).toFixed(2)} points)</div>
                   </div>
 
+                  {/* Hiển thị chi tiết lỗi biên dịch hoặc lỗi hệ thống nếu có */}
+                  {testCaseResults.some(tc => tc.error) && (
+                    <div className="bg-red-50 border border-red-200 rounded-xl p-4 overflow-x-auto">
+                      <div className="text-xs font-bold text-red-800 mb-2 flex items-center gap-2">
+                        <AlertCircle className="h-4 w-4" />
+                        Chi tiết lỗi (Error Output):
+                      </div>
+                      <pre className="text-xs text-red-700 font-mono whitespace-pre-wrap break-all">
+                        {testCaseResults.find(tc => tc.error)?.error}
+                      </pre>
+                    </div>
+                  )}
+
                 </div>
               ) : (
                 /* Fallback cho bài nộp chưa có chi tiết test case */
@@ -396,6 +409,14 @@ function SubmissionDetailPage() {
                   <div>Trạng thái: <b>{submission.status}</b></div>
                   <div>Thời gian thực thi: <b>{runTimeMs}</b></div>
                   <div>Bộ nhớ sử dụng: <b>{memoryKb}</b></div>
+                  
+                  {/* Hiển thị lỗi biên dịch nếu fallback không có chi tiết test case */}
+                  {submission.status === "CE" && (
+                     <div className="mt-4 bg-red-50 border border-red-200 p-3 rounded-lg text-xs text-red-700">
+                       <p className="font-bold mb-1">Hãy nộp lại bài để xem chi tiết lỗi biên dịch!</p>
+                       <p>Hệ thống vừa được cập nhật tính năng hiển thị lỗi chi tiết. Vui lòng Resubmit bài này.</p>
+                     </div>
+                  )}
                 </div>
               )}
 
