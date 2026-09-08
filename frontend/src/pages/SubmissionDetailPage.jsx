@@ -444,7 +444,13 @@ function SubmissionDetailPage() {
               )}
 
               {submission.status !== "PENDING" && !submission.ai_hint && (
-                <div className={submission.status === "AC" ? "bg-emerald-50 border border-emerald-100 text-emerald-800 rounded-xl p-5 text-sm flex items-start gap-3" : "bg-purple-50/50 border border-purple-100 text-purple-800 rounded-xl p-8 text-center flex flex-col items-center justify-center gap-3"}>
+                <div className={
+                  submission.status === "AC" 
+                    ? "bg-emerald-50 border border-emerald-100 text-emerald-800 rounded-xl p-5 text-sm flex items-start gap-3" 
+                    : (submission.status === "CE" || submission.status === "SYSTEM_ERROR") 
+                    ? "bg-red-50 border border-red-100 text-red-800 rounded-xl p-8 text-center flex flex-col items-center justify-center gap-3"
+                    : "bg-purple-50/50 border border-purple-100 text-purple-800 rounded-xl p-8 text-center flex flex-col items-center justify-center gap-3"
+                }>
                   {submission.status === "AC" ? (
                     <>
                       <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
@@ -453,6 +459,14 @@ function SubmissionDetailPage() {
                         <p className="text-emerald-700 leading-relaxed">
                           Bài làm của bạn đã vượt qua tất cả các test case thành công. Nộp bài nộp mới để trải nghiệm gợi ý tối ưu mã nguồn từ AI.
                         </p>
+                      </div>
+                    </>
+                  ) : submission.status === "CE" || submission.status === "SYSTEM_ERROR" ? (
+                    <>
+                      <AlertCircle className="h-8 w-8 text-red-500" />
+                      <div>
+                        <h4 className="font-bold text-red-800">Không có phân tích AI</h4>
+                        <p className="text-xs text-red-600 mt-1">Lỗi biên dịch hoặc lỗi hệ thống không được hỗ trợ phân tích bởi trợ lý AI.</p>
                       </div>
                     </>
                   ) : (
