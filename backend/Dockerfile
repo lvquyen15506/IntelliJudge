@@ -18,5 +18,6 @@ COPY . .
 # Expose cổng của Uvicorn API
 EXPOSE 8000
 
-# Lệnh khởi chạy mặc định cho Backend Server
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Lệnh khởi chạy mặc định cho Backend Server: 
+# Chạy migration database (Alembic) trước, sau đó mới khởi động FastAPI (Uvicorn)
+CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"]

@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2026 La Văn Quyền. All rights reserved.
 from fastapi import APIRouter
-from app.api.v1.endpoints import auth, users, problems, articles, submissions, rankings
+from app.api.v1.endpoints import auth, users, problems, articles, submissions, rankings, webhooks
 
 api_router = APIRouter()
 
@@ -12,3 +12,4 @@ api_router.include_router(problems.router, prefix="/problems", tags=["Problems"]
 api_router.include_router(articles.router, prefix="/articles", tags=["Articles"])
 api_router.include_router(submissions.router, tags=["Submissions"])
 api_router.include_router(rankings.router, prefix="/rankings", tags=["Rankings"])
+api_router.include_router(webhooks.router, prefix="/webhooks", tags=["Webhooks"])
