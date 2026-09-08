@@ -36,6 +36,9 @@ class Judge0Service:
         if settings.JUDGE0_API_KEY:
             self.headers["X-RapidAPI-Key"] = settings.JUDGE0_API_KEY
             self.headers["X-RapidAPI-Host"] = "judge0-extra-ce.p.rapidapi.com"
+        
+        if settings.JUDGE0_AUTH_TOKEN:
+            self.headers[settings.JUDGE0_AUTH_HEADER] = settings.JUDGE0_AUTH_TOKEN
 
     async def _get_working_base_url(self, client: httpx.AsyncClient) -> str:
         """

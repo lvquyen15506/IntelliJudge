@@ -33,6 +33,8 @@ class Settings(BaseSettings):
     JUDGE0_SERVER_URL: str = "http://localhost:2358"
     SANDBOX_URL: str = "http://localhost:2358"
     JUDGE0_API_KEY: str = ""
+    JUDGE0_AUTH_HEADER: str = "X-Auth-Token"
+    JUDGE0_AUTH_TOKEN: str = ""
 
     # AI Agent LLM Configuration
     LLM_API_URL: str = "http://localhost:11434/v1"
