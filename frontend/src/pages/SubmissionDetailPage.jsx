@@ -476,7 +476,7 @@ function SubmissionDetailPage() {
                       : "Báo cáo Phân tích Gợi ý Sửa lỗi từ AI"}
                   </div>
                   
-                  <div className="markdown-body prose prose-slate max-w-none text-sm leading-relaxed">
+                  <div className="markdown-body prose prose-slate max-w-none text-sm leading-relaxed whitespace-pre-line">
                     <ReactMarkdown>{submission.ai_hint}</ReactMarkdown>
                   </div>
                 </div>
