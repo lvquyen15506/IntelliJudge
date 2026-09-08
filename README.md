@@ -14,7 +14,7 @@
 ## ✨ Các Tính Năng Nổi Bật
 
 ### 1. 🤖 Trợ Lý AI Hướng Dẫn Tư Duy (Không Rò Rỉ Code)
-- **Phân tích bài làm bị lỗi (WA, TLE, MLE, CE):** AI đọc thông tin testcase bị sai, phân tích độ phức tạp $O(...)$, gợi ý hướng suy nghĩ và các bước kiểm thử trên giấy. **Ràng buộc tuyệt đối không đưa ra mã nguồn hay mã giả sửa sẵn** để sinh viên tự động não làm bài.
+- **Phân tích bài làm bị lỗi (WA, TLE, MLE):** AI đọc thông tin testcase bị sai, phân tích độ phức tạp $O(...)$, gợi ý hướng suy nghĩ và các bước kiểm thử trên giấy. **Ràng buộc tuyệt đối không đưa ra mã nguồn hay mã giả sửa sẵn** để sinh viên tự động não làm bài.
 - **Đánh giá tối ưu & Over-Engineering cho bài AC (Accepted):** Khi bài làm đã vượt qua 100% testcase, AI đóng vai trò Chuyên gia Competitive Programming phát hiện việc lạm dụng OOP, `shared_ptr`, interface hay cấp phát động cồng kềnh thừa thãi, gợi ý hướng tinh gọn bằng lời văn theo tiêu chuẩn Lập trình thi đấu.
 
 ### 2. 📊 Hệ Thống Điểm Từng Phần (Partial Scoring) & Bảng Xếp Hạng
@@ -36,7 +36,7 @@
 Dự án tuân thủ 100% tiêu chí Phần mềm Mã nguồn mở (PMNM) với toàn bộ thành phần công nghệ có giấy phép tự do (MIT, BSD, GPL, Apache):
 
 - **Backend:** Python 3.11, FastAPI, SQLAlchemy, PyMySQL, Celery, Redis, MySQL 8.0.
-- **Sandbox Execution Engine:** Judge0 API (v1.13.0 - Dockerized Sandbox).
+- **Sandbox Execution Engine:** Judge0 API (v1.13.1 - Dockerized Sandbox).
 - **AI Agent LLM:** Tích hợp Ollama / Local LLM / OpenAI Compatible API (Llama 3, Qwen 2.5, DeepSeek R1).
 - **Frontend:** React 18, Vite, TailwindCSS, Monaco Editor, Lucide React Icons, Nginx.
 
@@ -62,6 +62,13 @@ graph TD
 ### Yêu cầu tiên quyết:
 - [Docker](https://www.docker.com/) & [Docker Compose](https://docs.docker.com/compose/)
 - Cổng 5173 (Frontend), 8000 (Backend), 3306 (MySQL), 6379 (Redis), 2358 (Judge0) trống.
+- **Lưu ý Quan Trọng:** Máy chủ Linux (Ubuntu 22.04+, Debian 13+) cần được cấu hình chạy `cgroup v1` cho Judge0 Sandbox. Nếu triển khai trên Cloud VPS mới, bạn cần chèn đoạn lệnh sau vào phần User Data/Cloud-init để tự động cấu hình trước khi cài đặt:
+  ```bash
+  #!/bin/bash
+  sed -i 's/^GRUB_CMDLINE_LINUX_DEFAULT="/GRUB_CMDLINE_LINUX_DEFAULT="systemd.unified_cgroup_hierarchy=0 /' /etc/default/grub
+  update-grub
+  reboot
+  ```
 
 ### Các bước khởi chạy 1 lệnh duy nhất:
 
