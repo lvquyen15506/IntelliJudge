@@ -34,7 +34,8 @@ def parse_judge0_result(data: Dict[str, Any]) -> Dict[str, Any]:
 
     compile_output = safe_b64decode(data.get("compile_output") or "")
     stderr = safe_b64decode(data.get("stderr") or "")
-    error_message = compile_output or stderr
+    message = safe_b64decode(data.get("message") or "")
+    error_message = compile_output or stderr or message or "No error output provided by Judge0."
 
     if status_id == 3:
         mapped_status = SubmissionStatus.AC
